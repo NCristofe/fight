@@ -119,28 +119,32 @@ export class Character {
   receiveHit(move, attackerFacing, { blocked = false } = {}) {
     const defenseFactor = this.data.stats.defense;
     let damage = move.damage * defenseFactor;
+    let critical = false;
     if (blocked) {
-      damage *= 0.12;
+      damage *= this.hasSword ? 0.12 : 0.4;
       this.energy = Math.min(this.maxEnergy, this.energy + 4);
       this.events.push({ type: 'sfx', sound: 'block' });
       this.flashTimer = 80;
       this.vx = -attackerFacing * 70;
     } else {
-      this.energy = Math.min(this.maxEnergy, this.energy + (move.energyGain || 10));
+      critical = this.hasSword && Math.random() < (move.critChance || 0);
+      if (critical) damage *= 1.4;
+      this.energy = Math.min(this.maxEnergy, this.energy + 10);
       this.setState('hitstun');
-      this.vx = -attackerFacing * 160;
-      this.flashTimer = 120;
+      this.vx = -attackerFacing * (critical ? 220 : 160);
+      this.flashTimer = critical ? 180 : 120;
       this.events.push({ type: 'sfx', sound: 'hit' });
       const now = performance.now();
       if (now - this.lastHitLandedAt < 1400) this.comboCount += 1;
       else this.comboCount = 1;
       this.lastHitLandedAt = now;
+      if (critical) this.disarm();
     }
     this.health = Math.max(0, this.health - damage);
     if (this.health <= 0) {
       this.setState('lose');
     }
-    return damage;
+    return { damage, critical };
   }
 
   update(dt, input, opponent) {
