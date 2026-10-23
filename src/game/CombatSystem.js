@@ -39,8 +39,8 @@ export class CombatSystem {
         const box = { x: proj.x - 16, y: proj.y - 16, w: 32, h: 32 };
         if (rectsOverlap(box, defender.getHurtbox())) {
           const blocked = defender.state === 'block';
-          const damage = defender.receiveHit(proj.move, proj.facing, { blocked });
-          this.hitEvents.push({ attackerIndex: proj.owner, defenderIndex: defender.playerIndex, damage, blocked, x: defender.x, y: proj.y });
+          const { damage, critical } = defender.receiveHit(proj.move, proj.facing, { blocked });
+          this.hitEvents.push({ attackerIndex: proj.owner, defenderIndex: defender.playerIndex, damage, blocked, critical, x: defender.x, y: proj.y });
           proj.hasHit = true;
           proj.life = 0;
         }
