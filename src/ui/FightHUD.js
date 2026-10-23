@@ -36,9 +36,9 @@ export class FightHUD {
       <button class="hud-pause-btn" aria-label="Pausar">II</button>
       <div class="hud-pause-overlay hidden">
         <div class="pause-box">
-          <h2>PAUSADO</h2>
+          <h2>${callbacks.online ? 'MENU' : 'PAUSADO'}</h2>
           <button data-action="resume">CONTINUAR</button>
-          <button data-action="restart">REINICIAR LUTA</button>
+          ${callbacks.online ? '' : '<button data-action="restart">REINICIAR LUTA</button>'}
           <button data-action="menu">MENU PRINCIPAL</button>
         </div>
       </div>
