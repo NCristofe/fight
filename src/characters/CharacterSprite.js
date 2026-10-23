@@ -10,21 +10,27 @@ const RIG = {
   headRadius: 18,
   upperLimb: 30,
   lowerLimb: 28,
-  swordBlade: 46,
-  swordHilt: 9
+  swordBlade: 62,
+  swordHilt: 8,
+  swordGripAngle: 140
 };
 
+// The blade is cocked back from the forearm so a hanging arm holds it up and
+// forward (a guard stance) instead of pointing at the floor, and it still
+// follows every arm pose during slashes.
 function drawSword(ctx, handLen) {
   ctx.save();
+  ctx.translate(0, handLen);
+  ctx.rotate(RIG.swordGripAngle * D2R);
+  ctx.lineWidth = LINE_WIDTH * 0.45;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, RIG.swordHilt + RIG.swordBlade);
+  ctx.stroke();
   ctx.lineWidth = LINE_WIDTH * 0.4;
   ctx.beginPath();
-  ctx.moveTo(0, handLen);
-  ctx.lineTo(0, handLen + RIG.swordHilt + RIG.swordBlade);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-8, handLen + RIG.swordHilt);
-  ctx.lineTo(8, handLen + RIG.swordHilt);
-  ctx.lineWidth = LINE_WIDTH * 0.35;
+  ctx.moveTo(-9, RIG.swordHilt);
+  ctx.lineTo(9, RIG.swordHilt);
   ctx.stroke();
   ctx.restore();
 }
