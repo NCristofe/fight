@@ -28,7 +28,8 @@ export class MainMenu {
         <nav class="menu-buttons">
           <button data-action="play">LUTAR CONTRA A CPU</button>
           <button data-action="training">TREINAMENTO</button>
-          <button data-action="pvp">PVP LOCAL <em>2 JOGADORES</em></button>
+          <button data-action="pvp">PVP LOCAL <em>MESMO TECLADO</em></button>
+          <button data-action="online">PVP ONLINE <em>OUTRO DISPOSITIVO</em></button>
           <button data-action="settings">CONFIGURACOES</button>
           <button data-action="credits">CREDITOS</button>
         </nav>
@@ -45,6 +46,7 @@ export class MainMenu {
     wire('play', callbacks.onPlay);
     wire('training', callbacks.onTraining);
     wire('pvp', callbacks.onPvp);
+    wire('online', callbacks.onOnline);
     wire('settings', callbacks.onSettings);
     wire('credits', callbacks.onCredits);
 
