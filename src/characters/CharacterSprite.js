@@ -9,10 +9,27 @@ const RIG = {
   torsoLen: 58,
   headRadius: 18,
   upperLimb: 30,
-  lowerLimb: 28
+  lowerLimb: 28,
+  swordBlade: 46,
+  swordHilt: 9
 };
 
-function strokeChain(ctx, upperAngle, upperLen, lowerAngle, lowerLen) {
+function drawSword(ctx, handLen) {
+  ctx.save();
+  ctx.lineWidth = LINE_WIDTH * 0.4;
+  ctx.beginPath();
+  ctx.moveTo(0, handLen);
+  ctx.lineTo(0, handLen + RIG.swordHilt + RIG.swordBlade);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-8, handLen + RIG.swordHilt);
+  ctx.lineTo(8, handLen + RIG.swordHilt);
+  ctx.lineWidth = LINE_WIDTH * 0.35;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function strokeChain(ctx, upperAngle, upperLen, lowerAngle, lowerLen, tipDraw) {
   ctx.save();
   ctx.rotate(upperAngle * D2R);
   ctx.beginPath();
@@ -31,11 +48,32 @@ function strokeChain(ctx, upperAngle, upperLen, lowerAngle, lowerLen) {
   ctx.beginPath();
   ctx.arc(0, lowerLen, LINE_WIDTH * 0.4, 0, Math.PI * 2);
   ctx.fill();
+  if (tipDraw) tipDraw(ctx, lowerLen);
+  ctx.restore();
+}
+
+/** Draws a sword lying on the ground (dropped after a disarm). */
+export function drawGroundSword(ctx, x, groundY) {
+  ctx.save();
+  ctx.translate(x, groundY - 6);
+  ctx.rotate(-18 * D2R);
+  ctx.strokeStyle = '#2a2a2a';
+  ctx.lineWidth = LINE_WIDTH * 0.4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-RIG.swordBlade / 2, 0);
+  ctx.lineTo(RIG.swordBlade / 2 + RIG.swordHilt, 0);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(RIG.swordBlade / 2 - 6, -7);
+  ctx.lineTo(RIG.swordBlade / 2 - 6, 7);
+  ctx.lineWidth = LINE_WIDTH * 0.35;
+  ctx.stroke();
   ctx.restore();
 }
 
 export function drawCharacter(ctx, x, feetY, facing, pose, opts = {}) {
-  const { flash = false, alpha = 1, color = '#161616' } = opts;
+  const { flash = false, alpha = 1, color = '#161616', hasSword = true } = opts;
   const drawColor = flash ? '#ffffff' : color;
 
   ctx.save();
@@ -92,11 +130,11 @@ export function drawCharacter(ctx, x, feetY, facing, pose, opts = {}) {
   strokeChain(ctx, pose.legFront.hip, RIG.upperLimb, pose.legFront.knee, RIG.lowerLimb);
   ctx.restore();
 
-  // front arm (drawn last so it reads on top during strikes)
+  // front arm (drawn last so it reads on top during strikes) + sword
   withUpperBody(() => {
     ctx.save();
     ctx.translate(0, -RIG.torsoLen);
-    strokeChain(ctx, pose.armFront.shoulder, RIG.upperLimb * 0.95, pose.armFront.elbow, RIG.lowerLimb * 0.95);
+    strokeChain(ctx, pose.armFront.shoulder, RIG.upperLimb * 0.95, pose.armFront.elbow, RIG.lowerLimb * 0.95, hasSword ? drawSword : null);
     ctx.restore();
   });
 
