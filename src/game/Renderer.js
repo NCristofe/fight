@@ -1,5 +1,5 @@
 import { LOGICAL_WIDTH, LOGICAL_HEIGHT, GROUND_Y } from '../utils/constants.js';
-import { drawCharacter } from '../characters/CharacterSprite.js';
+import { drawCharacter, drawGroundSword } from '../characters/CharacterSprite.js';
 
 class ParticleSystem {
   constructor() {
@@ -60,6 +60,21 @@ class ParticleSystem {
   /** One expanding ring on a landed hit. */
   spawnRing(x, y, color) {
     this.particles.push({ type: 'ring', x, y, radius: 6, life: 220, maxLife: 220, color });
+  }
+
+  /** A tiny fading streak, used to trace the blade's swing while an attack is active. */
+  spawnSwish(x, y, color = '#ffffff') {
+    this.particles.push({
+      type: 'spark',
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 30,
+      vy: (Math.random() - 0.5) * 30,
+      life: 90,
+      maxLife: 90,
+      length: 10,
+      color
+    });
   }
 
   update(dt) {
