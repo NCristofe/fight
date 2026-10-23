@@ -1,19 +1,19 @@
 import { keyLabel } from '../utils/keyLabel.js';
 
 const MOVES = [
-  { label: 'Jab', combo: (km) => keyLabel(km.punch), desc: 'Soco rapido e fraco' },
-  { label: 'Gancho', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.punch)}`, desc: 'Soco forte, mais lento' },
-  { label: 'Chute Alto', combo: (km) => keyLabel(km.kick), desc: 'Chute de media distancia' },
-  { label: 'Chute Baixo', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.kick)}`, desc: 'Chute baixo, mais rapido' },
+  { label: 'Golpe Rapido', combo: (km) => keyLabel(km.punch), desc: 'Corte rapido, pouco dano' },
+  { label: 'Golpe Forte', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.punch)}`, desc: 'Corte pesado, lento, alto risco de critico' },
+  { label: 'Estocada', combo: (km) => keyLabel(km.kick), desc: 'Investida com a ponta da espada' },
+  { label: 'Golpe Baixo', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.kick)}`, desc: 'Corte rente ao chao' },
   { label: 'Defesa', combo: (km) => keyLabel(km.block), desc: 'Segure para reduzir o dano recebido' },
   { label: 'Pular', combo: (km) => keyLabel(km.up), desc: '' },
   { label: 'Agachar', combo: (km) => keyLabel(km.down), desc: '' }
 ];
 
-function buildColumn(title, keymap) {
+function buildMoveColumn(keymap) {
   const col = document.createElement('div');
   col.className = 'movelist-col';
-  col.innerHTML = `<h3>${title}</h3>`;
+  col.innerHTML = '<h3>VOCE</h3>';
   const table = document.createElement('div');
   table.className = 'movelist-table';
   MOVES.forEach((m) => {
@@ -32,14 +32,11 @@ function buildColumn(title, keymap) {
 
 export class MoveListScreen {
   constructor(root, audio, settings, callbacks) {
-    this.audio = audio;
-    this.callbacks = callbacks;
-
     this.el = document.createElement('div');
     this.el.className = 'screen movelist-screen';
     this.el.innerHTML = `
       <div class="movelist-bg"></div>
-      <h2>GOLPES BASICOS</h2>
+      <h2>GOLPES</h2>
       <div class="movelist-body"></div>
       <div class="movelist-footer">
         <button data-action="back">VOLTAR</button>
@@ -49,15 +46,17 @@ export class MoveListScreen {
     root.appendChild(this.el);
 
     const body = this.el.querySelector('.movelist-body');
-    body.appendChild(buildColumn('JOGADOR 1', settings.keymap.p1));
-    if (!callbacks.isTraining) {
-      body.appendChild(buildColumn('JOGADOR 2', settings.keymap.p2));
-    } else {
-      const cpuCol = document.createElement('div');
-      cpuCol.className = 'movelist-col movelist-col--cpu';
-      cpuCol.innerHTML = '<h3>CPU</h3><p>O adversario controlado pelo computador usa os mesmos golpes.</p>';
-      body.appendChild(cpuCol);
-    }
+    body.appendChild(buildMoveColumn(settings.keymap.p1));
+
+    const rules = document.createElement('div');
+    rules.className = 'movelist-col movelist-col--rules';
+    rules.innerHTML = `
+      <h3>GOLPE CRITICO</h3>
+      <p>Um golpe critico causa mais dano e <strong>derruba a espada</strong> de quem foi atingido.</p>
+      <p>Sem espada voce nao ataca e defende pior. Caminhe ate a espada caida para pega-la de volta.</p>
+      <p>Isso vale para a CPU tambem.</p>
+    `;
+    body.appendChild(rules);
 
     this.el.querySelector('[data-action="back"]').addEventListener('click', () => {
       audio.sfx('back');
