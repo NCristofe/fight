@@ -1,7 +1,7 @@
 const DIFFICULTY_PROFILES = {
-  facil: { reaction: 480, aggressiveness: 0.22, blockChance: 0.12, specialChance: 0.1, jumpChance: 0.04 },
-  normal: { reaction: 300, aggressiveness: 0.4, blockChance: 0.3, specialChance: 0.22, jumpChance: 0.06 },
-  dificil: { reaction: 150, aggressiveness: 0.62, blockChance: 0.52, specialChance: 0.35, jumpChance: 0.08 }
+  facil: { reaction: 480, aggressiveness: 0.22, blockChance: 0.12, heavyChance: 0.15, jumpChance: 0.04 },
+  normal: { reaction: 300, aggressiveness: 0.4, blockChance: 0.3, heavyChance: 0.3, jumpChance: 0.06 },
+  dificil: { reaction: 150, aggressiveness: 0.62, blockChance: 0.52, heavyChance: 0.45, jumpChance: 0.08 }
 };
 
 const ATTACK_RANGE = 95;
@@ -12,7 +12,7 @@ export class AIController {
     this.setDifficulty(difficulty);
     this.decisionTimer = 0;
     this.intent = { moveDir: 0, wantBlock: false, wantJump: false };
-    this.held = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false, special: false };
+    this.held = { left: false, right: false, up: false, down: false, punch: false, kick: false, block: false };
     this.prevHeld = { ...this.held };
   }
 
@@ -31,7 +31,6 @@ export class AIController {
     this.intent.wantJump = false;
     this.wantPunch = false;
     this.wantKick = false;
-    this.wantSpecial = false;
     this.wantCrouch = false;
 
     const opponentAttacking = opponent.isAttacking() && opponent.stateTime < (opponent.activeMove?.startup || 0) + (opponent.activeMove?.active || 0) + 60;
@@ -53,12 +52,10 @@ export class AIController {
     }
 
     if (dist <= ATTACK_RANGE && Math.random() < p.aggressiveness) {
-      if (self.energy >= (self.data.moves.special1?.energyCost || 999) && Math.random() < p.specialChance) {
-        this.wantSpecial = true;
-      } else {
-        this.wantPunch = Math.random() < 0.55;
-        this.wantKick = !this.wantPunch;
-      }
+      this.wantPunch = Math.random() < 0.55;
+      this.wantKick = !this.wantPunch;
+      // sometimes throws the heavier crouching variant (hook / low kick)
+      this.wantCrouch = Math.random() < p.heavyChance;
       return;
     }
 
@@ -82,7 +79,6 @@ export class AIController {
     this.held.block = this.intent.wantBlock;
     this.held.punch = this.wantPunch;
     this.held.kick = this.wantKick;
-    this.held.special = this.wantSpecial;
 
     const edge = (key) => this.held[key] && !this.prevHeld[key];
     return {
@@ -93,11 +89,9 @@ export class AIController {
       block: this.held.block,
       punch: this.held.punch,
       kick: this.held.kick,
-      special: this.held.special,
       upPressed: edge('up'),
       punchPressed: edge('punch'),
-      kickPressed: edge('kick'),
-      specialPressed: edge('special')
+      kickPressed: edge('kick')
     };
   }
 }
