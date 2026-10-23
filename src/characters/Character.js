@@ -214,12 +214,12 @@ export class Character {
       return;
     }
 
-    if (input.punchPressed && this.canAct()) {
-      this.startAttack(input.down ? 'hook' : 'jab');
+    if (input.punchPressed && this.canAct() && this.hasSword) {
+      this.startAttack(input.down ? 'heavySlash' : 'slash');
       return;
     }
-    if (input.kickPressed && this.canAct()) {
-      this.startAttack(input.down ? 'lowKick' : 'highKick');
+    if (input.kickPressed && this.canAct() && this.hasSword) {
+      this.startAttack(input.down ? 'lowSlash' : 'thrust');
       return;
     }
 
