@@ -8,7 +8,7 @@
 export const SWORD_MOVES = {
   slash: { name: 'Golpe Rapido', damage: 6, startup: 70, active: 80, recovery: 160, range: 82, critChance: 0.08 },
   heavySlash: { name: 'Golpe Forte', damage: 12, startup: 160, active: 100, recovery: 280, range: 92, critChance: 0.24 },
-  thrust: { name: 'Estocada', damage: 8, startup: 90, active: 70, recovery: 200, range: 100, critChance: 0.12 },
+  thrust: { name: 'Estocada', damage: 8, startup: 90, active: 70, recovery: 200, range: 100, critChance: 0.12, dash: true },
   lowSlash: { name: 'Golpe Baixo', damage: 7, startup: 90, active: 80, recovery: 210, range: 86, critChance: 0.16 }
 };
 
