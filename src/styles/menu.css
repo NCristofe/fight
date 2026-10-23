@@ -205,6 +205,77 @@
   margin: 20px 0 28px;
 }
 
+/* Online lobby */
+.online-lobby h2 {
+  position: relative;
+  z-index: 1;
+  color: var(--color-p1);
+  font-family: var(--font-logo);
+  font-size: clamp(20px, 3.4vw, 32px);
+  letter-spacing: 4px;
+  margin: 16px 0;
+}
+.lobby-box {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 88vw);
+  background: rgba(23, 14, 10, 0.9);
+  border: 1px solid var(--color-p1);
+  border-top: 3px solid var(--color-p2);
+  border-radius: 2px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+.lobby-hint { margin: 0; font-size: 12px; font-weight: 500; line-height: 1.6; }
+.lobby-hint strong { color: var(--color-p1); word-break: break-all; }
+.lobby-hint em { font-style: normal; color: var(--color-p1); }
+.lobby-local-warning { font-size: 11px; opacity: 0.85; }
+.lobby-actions { display: flex; flex-direction: column; gap: 10px; }
+.lobby-actions button, .lobby-join button, .lobby-back {
+  padding: 12px 18px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, rgba(40, 26, 18, 0.95), rgba(18, 11, 8, 0.95));
+  color: var(--color-paper);
+  border: 1px solid var(--color-p1);
+  border-left: 5px solid var(--color-p2);
+  border-radius: 2px;
+}
+.lobby-actions button:hover:not(:disabled), .lobby-join button:hover:not(:disabled), .lobby-back:hover {
+  background: var(--color-p1);
+  color: var(--color-ink);
+}
+.lobby-actions button:disabled, .lobby-join button:disabled { opacity: 0.5; cursor: not-allowed; }
+.lobby-join { display: flex; gap: 10px; }
+.lobby-input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 8px;
+  padding: 8px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border: 1px solid var(--color-p1);
+  text-transform: uppercase;
+}
+.lobby-code { display: flex; flex-direction: column; gap: 6px; font-size: 11px; letter-spacing: 3px; }
+.lobby-code-value {
+  font-family: var(--font-logo);
+  font-size: 46px;
+  letter-spacing: 14px;
+  color: var(--color-p1);
+  text-shadow: 0 3px 0 var(--color-p2);
+}
+.lobby-status { margin: 0; min-height: 18px; font-size: 12px; font-weight: 500; }
+.lobby-status.is-error { color: #ff8a78; }
+.lobby-back { position: relative; z-index: 1; margin: 16px 0 24px; }
+.hidden { display: none !important; }
+
 /* Credits */
 .credits-body {
   position: relative;
