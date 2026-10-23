@@ -1,6 +1,6 @@
-// Generic black stick-figure renderer. Deliberately minimal/placeholder
-// (no per-character color, no accessories) - see README for how to swap
-// in real sprite sheets later without touching combat/animation logic.
+// Stick-figure swordsman renderer. All poses are authored for a fighter facing
+// right; facing left is a single mirror. The sword angle is independent of the
+// forearm (pose.sword) so blade arcs can be animated separately from the arm.
 const D2R = Math.PI / 180;
 const LINE_WIDTH = 9;
 
@@ -10,28 +10,58 @@ const RIG = {
   headRadius: 18,
   upperLimb: 30,
   lowerLimb: 28,
-  swordBlade: 62,
-  swordHilt: 8,
-  swordGripAngle: 140
+  swordBlade: 70,
+  swordHilt: 10
 };
 
-// The blade is cocked back from the forearm so a hanging arm holds it up and
-// forward (a guard stance) instead of pointing at the floor, and it still
-// follows every arm pose during slashes.
-function drawSword(ctx, handLen) {
+const STEEL = '#dfe5ea';
+const STEEL_FLASH = '#ffffff';
+
+let lastTipDevice = null;
+
+function drawBlade(ctx, outline, steel) {
+  const len = RIG.swordBlade;
+  const base = RIG.swordHilt;
+  // grip
+  ctx.lineWidth = LINE_WIDTH * 0.55;
+  ctx.strokeStyle = outline;
+  ctx.beginPath();
+  ctx.moveTo(0, -2);
+  ctx.lineTo(0, base);
+  ctx.stroke();
+  // pommel
+  ctx.fillStyle = outline;
+  ctx.beginPath();
+  ctx.arc(0, -3, LINE_WIDTH * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  // crossguard
+  ctx.lineWidth = LINE_WIDTH * 0.5;
+  ctx.beginPath();
+  ctx.moveTo(-10, base);
+  ctx.lineTo(10, base);
+  ctx.stroke();
+  // blade: outlined tapered steel
+  ctx.beginPath();
+  ctx.moveTo(-3.4, base);
+  ctx.lineTo(3.4, base);
+  ctx.lineTo(0.8, base + len);
+  ctx.lineTo(-0.8, base + len);
+  ctx.closePath();
+  ctx.fillStyle = steel;
+  ctx.fill();
+  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = outline;
+  ctx.stroke();
+}
+
+function drawHeldSword(ctx, handLen, angle, outline, steel) {
   ctx.save();
   ctx.translate(0, handLen);
-  ctx.rotate(RIG.swordGripAngle * D2R);
-  ctx.lineWidth = LINE_WIDTH * 0.45;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, RIG.swordHilt + RIG.swordBlade);
-  ctx.stroke();
-  ctx.lineWidth = LINE_WIDTH * 0.4;
-  ctx.beginPath();
-  ctx.moveTo(-9, RIG.swordHilt);
-  ctx.lineTo(9, RIG.swordHilt);
-  ctx.stroke();
+  ctx.rotate(angle * D2R);
+  drawBlade(ctx, outline, steel);
+  const m = ctx.getTransform();
+  const p = m.transformPoint(new DOMPoint(0, RIG.swordHilt + RIG.swordBlade));
+  lastTipDevice = { x: p.x, y: p.y };
   ctx.restore();
 }
 
@@ -58,39 +88,48 @@ function strokeChain(ctx, upperAngle, upperLen, lowerAngle, lowerLen, tipDraw) {
   ctx.restore();
 }
 
-/** Draws a sword lying on the ground (dropped after a disarm). */
-export function drawGroundSword(ctx, x, groundY) {
+/** Sword lying on the ground (dropped after a disarm). */
+export function drawGroundSword(ctx, x, groundY, time = 0) {
+  const pulse = 0.5 + 0.5 * Math.sin(time / 260);
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 240, 160, 0.35)';
+  ctx.fillStyle = `rgba(255, 236, 150, ${0.25 + pulse * 0.25})`;
   ctx.beginPath();
-  ctx.ellipse(x, groundY + 2, 48, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, groundY + 2, 52 + pulse * 6, 13, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.translate(x, groundY - 6);
-  ctx.rotate(-18 * D2R);
-  ctx.strokeStyle = '#2a2a2a';
-  ctx.lineWidth = LINE_WIDTH * 0.4;
+  ctx.translate(x, groundY - 7);
+  ctx.rotate(-14 * D2R);
   ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(-RIG.swordBlade / 2, 0);
-  ctx.lineTo(RIG.swordBlade / 2 + RIG.swordHilt, 0);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(RIG.swordBlade / 2 - 6, -7);
-  ctx.lineTo(RIG.swordBlade / 2 - 6, 7);
-  ctx.lineWidth = LINE_WIDTH * 0.35;
-  ctx.stroke();
+  ctx.lineJoin = 'round';
+  // draw the sword horizontally: rotate blade axis from +y to +x
+  ctx.rotate(-90 * D2R);
+  ctx.translate(0, -RIG.swordBlade / 2);
+  drawBlade(ctx, '#1c1c1c', STEEL);
   ctx.restore();
 }
 
+/**
+ * Draws the fighter. Returns the world-space (logical coords) position of the
+ * sword tip, or null if unarmed, so the renderer can trace blade trails.
+ */
 export function drawCharacter(ctx, x, feetY, facing, pose, opts = {}) {
   const { flash = false, alpha = 1, color = '#161616', hasSword = true } = opts;
   const drawColor = flash ? '#ffffff' : color;
+  const steel = flash ? STEEL_FLASH : STEEL;
+  const base = ctx.getTransform();
+  lastTipDevice = null;
+
+  // Lowest foot decides ground contact, so bent knees lower the whole body
+  // instead of leaving the feet floating.
+  const footDrop = (leg) =>
+    RIG.hip.y + RIG.upperLimb * Math.cos(leg.hip * D2R) + RIG.lowerLimb * Math.cos((leg.hip + leg.knee) * D2R);
+  const groundShift = -Math.max(footDrop(pose.legFront), footDrop(pose.legBack));
 
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(x, feetY);
   ctx.scale(facing, 1);
-  ctx.translate(pose.offsetX, pose.offsetY);
+  ctx.translate(pose.offsetX, pose.offsetY + groundShift);
+  if (pose.tilt) ctx.rotate(pose.tilt * D2R);
   ctx.scale(1, pose.squash);
 
   ctx.strokeStyle = drawColor;
@@ -140,15 +179,22 @@ export function drawCharacter(ctx, x, feetY, facing, pose, opts = {}) {
   strokeChain(ctx, pose.legFront.hip, RIG.upperLimb, pose.legFront.knee, RIG.lowerLimb);
   ctx.restore();
 
-  // front arm (drawn last so it reads on top during strikes) + sword
+  // sword arm last so the blade reads on top of everything
   withUpperBody(() => {
     ctx.save();
     ctx.translate(0, -RIG.torsoLen);
-    strokeChain(ctx, pose.armFront.shoulder, RIG.upperLimb * 0.95, pose.armFront.elbow, RIG.lowerLimb * 0.95, hasSword ? drawSword : null);
+    const tip = hasSword
+      ? (c, handLen) => drawHeldSword(c, handLen, pose.sword, drawColor, steel)
+      : null;
+    strokeChain(ctx, pose.armFront.shoulder, RIG.upperLimb * 0.95, pose.armFront.elbow, RIG.lowerLimb * 0.95, tip);
     ctx.restore();
   });
 
   ctx.restore();
+
+  if (!lastTipDevice) return null;
+  const p = base.inverse().transformPoint(new DOMPoint(lastTipDevice.x, lastTipDevice.y));
+  return { x: p.x, y: p.y };
 }
 
 function lerp(a, b, t) {
@@ -163,7 +209,7 @@ function lerpLeg(a, b, t) {
   return { hip: lerp(a.hip, b.hip, t), knee: lerp(a.knee, b.knee, t) };
 }
 
-function lerpPose(a, b, t) {
+export function lerpPose(a, b, t) {
   return {
     bodyLean: lerp(a.bodyLean, b.bodyLean, t),
     headTilt: lerp(a.headTilt, b.headTilt, t),
@@ -171,18 +217,25 @@ function lerpPose(a, b, t) {
     armBack: lerpLimb(a.armBack, b.armBack, t),
     legFront: lerpLeg(a.legFront, b.legFront, t),
     legBack: lerpLeg(a.legBack, b.legBack, t),
+    sword: lerp(a.sword, b.sword, t),
+    tilt: lerp(a.tilt, b.tilt, t),
     offsetX: lerp(a.offsetX, b.offsetX, t),
     offsetY: lerp(a.offsetY, b.offsetY, t),
     squash: lerp(a.squash, b.squash, t)
   };
 }
 
-const easeOut = (t) => 1 - (1 - t) * (1 - t);
+const EASINGS = {
+  out: (t) => 1 - (1 - t) * (1 - t),
+  in: (t) => t * t,
+  inOut: (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
+  linear: (t) => t
+};
 
 /**
- * Smoothly interpolates between consecutive keyframes of an animation
- * (instead of snapping on each frame boundary), so strikes read as fluid
- * motion rather than a slideshow of poses.
+ * Interpolates between keyframes. Each frame may set `ease` ('in' for
+ * wind-ups that accelerate into the strike, 'out' for recoveries, etc.);
+ * the easing shapes the motion INTO the next frame.
  */
 export function interpolateFrame(animation, elapsedMs) {
   const frames = animation.frames;
@@ -204,7 +257,8 @@ export function interpolateFrame(animation, elapsedMs) {
 
   const current = frames[index];
   const nextIndex = (index + 1) % frames.length;
-  const progress = easeOut(Math.min(1, t / current.duration));
+  const ease = EASINGS[current.ease] || EASINGS.out;
+  const progress = ease(Math.min(1, t / current.duration));
   const pose = lerpPose(current.pose, frames[nextIndex].pose, progress);
   return { pose, finished: false, index };
 }
