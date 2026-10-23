@@ -11,6 +11,7 @@ import { InputManager } from '../controls/InputManager.js';
 import { AudioManager } from '../audio/AudioManager.js';
 import { MainMenu } from '../ui/MainMenu.js';
 import { CharacterSelect } from '../ui/CharacterSelect.js';
+import { MoveListScreen } from '../ui/MoveListScreen.js';
 import { FightHUD } from '../ui/FightHUD.js';
 import { SettingsMenu } from '../ui/SettingsMenu.js';
 import { CreditsScreen } from '../ui/CreditsScreen.js';
@@ -104,10 +105,20 @@ export class Game {
     this.sceneName = 'select';
     this.audio.startMusic('select');
     this.scene = new CharacterSelect(this.uiRoot, this.audio, mode, {
-      onConfirm: (p1Id, p2Id) => this.startFight({ p1Id, p2Id, isTraining: mode === 'training' }),
+      onConfirm: (p1Id, p2Id) => this.goToMoveList({ p1Id, p2Id, isTraining: mode === 'training' }),
       onBack: () => this.goToMainMenu()
     });
     this.scene.setInput(this.input);
+  }
+
+  goToMoveList({ p1Id, p2Id, isTraining }) {
+    this.clearScene();
+    this.sceneName = 'movelist';
+    this.scene = new MoveListScreen(this.uiRoot, this.audio, this.settings, {
+      isTraining,
+      onStart: () => this.startFight({ p1Id, p2Id, isTraining }),
+      onBack: () => this.goToCharacterSelect(isTraining ? 'training' : 'versus')
+    });
   }
 
   goToSettings() {
@@ -157,7 +168,8 @@ export class Game {
       ai: isTraining ? new AIController(this.settings.difficulty) : null,
       p2IsAI: isTraining,
       lastPhase: round.phase,
-      matchEndHandled: false
+      matchEndHandled: false,
+      hitStopTimer: 0
     };
 
     this.setupTouchForFight();
@@ -192,6 +204,13 @@ export class Game {
   }
 
   updateFight(dt) {
+    if (this.fight.hitStopTimer > 0) {
+      this.fight.hitStopTimer -= dt * 1000;
+      this.renderer.particles.update(dt);
+      this.input.endStep();
+      return;
+    }
+
     const { p1, p2, round, ai, p2IsAI } = this.fight;
 
     if (round.isActive()) {
@@ -202,12 +221,20 @@ export class Game {
       this.processEvents(p1);
       this.processEvents(p2);
       this.combat.update(dt, [p1, p2]);
+      let hitStop = 0;
       for (const ev of this.combat.hitEvents) {
-        const color = ev.blocked ? '#9fd8ff' : ev.countered ? '#ffe08a' : '#ffcf5c';
-        this.renderer.particles.spawnImpact(ev.x, ev.y, color, ev.blocked ? 6 : 14);
+        if (ev.blocked) {
+          this.renderer.particles.spawnImpact(ev.x, ev.y, '#9fd8ff', 6);
+          hitStop = Math.max(hitStop, 25);
+        } else {
+          const color = ev.countered ? '#ffe08a' : '#fff6a0';
+          this.renderer.particles.spawnImpact(ev.x, ev.y, color, 10);
+          this.renderer.particles.spawnSpark(ev.x, ev.y, '#ffffff', 10);
+          this.renderer.particles.spawnRing(ev.x, ev.y, color);
+          hitStop = Math.max(hitStop, 70);
+        }
       }
-      this.input.setTouchEnergyFull(0, p1.energy >= p1.maxEnergy);
-      this.input.setTouchEnergyFull(1, p2.energy >= p2.maxEnergy);
+      if (hitStop > 0) this.fight.hitStopTimer = hitStop;
     }
 
     this.renderer.particles.update(dt);
@@ -228,8 +255,7 @@ export class Game {
 
   processEvents(character) {
     for (const ev of character.events) {
-      if (ev.type === 'spawnProjectile') this.combat.spawnProjectile(ev);
-      else if (ev.type === 'sfx') this.audio.sfx(ev.sound);
+      if (ev.type === 'sfx') this.audio.sfx(ev.sound);
     }
   }
 
@@ -247,7 +273,6 @@ export class Game {
       this.renderer.drawShadow(this.fight.p2);
       const order = this.fight.p1.x <= this.fight.p2.x ? [this.fight.p1, this.fight.p2] : [this.fight.p2, this.fight.p1];
       for (const fighter of order) this.renderer.drawFighter(fighter);
-      for (const proj of this.combat.projectiles) this.renderer.drawProjectile(proj);
       this.renderer.particles.draw(this.renderer.ctx);
     } else {
       this.renderer.drawArena(this.bgArena, this.bgTime);
