@@ -78,25 +78,26 @@ export class AudioManager {
 
   sfx(name) {
     switch (name) {
-      case 'punch':
-        this.tone({ freq: 190, slideTo: 80, duration: 0.09, type: 'square', gain: 0.35 });
+      case 'jab':
+        this.tone({ freq: 240, slideTo: 150, duration: 0.05, type: 'square', gain: 0.3 });
         break;
-      case 'kick':
-        this.noise({ duration: 0.12, gain: 0.4 });
-        this.tone({ freq: 130, slideTo: 55, duration: 0.12, type: 'square', gain: 0.3 });
+      case 'hook':
+        this.noise({ duration: 0.07, gain: 0.25 });
+        this.tone({ freq: 140, slideTo: 55, duration: 0.14, type: 'square', gain: 0.4, delay: 0.03 });
+        break;
+      case 'highKick':
+        this.noise({ duration: 0.06, gain: 0.2 });
+        this.tone({ freq: 260, slideTo: 110, duration: 0.1, type: 'triangle', gain: 0.3, delay: 0.05 });
+        break;
+      case 'lowKick':
+        this.noise({ duration: 0.1, gain: 0.35 });
+        this.tone({ freq: 100, slideTo: 50, duration: 0.09, type: 'square', gain: 0.3 });
         break;
       case 'block':
         this.tone({ freq: 650, slideTo: 420, duration: 0.08, type: 'triangle', gain: 0.25 });
         break;
       case 'hit':
         this.noise({ duration: 0.18, gain: 0.5 });
-        break;
-      case 'special':
-        this.tone({ freq: 300, slideTo: 950, duration: 0.3, type: 'sawtooth', gain: 0.3 });
-        break;
-      case 'super':
-        this.tone({ freq: 150, slideTo: 1300, duration: 0.6, type: 'sawtooth', gain: 0.35 });
-        this.noise({ duration: 0.4, gain: 0.3 });
         break;
       case 'select':
         this.tone({ freq: 440, duration: 0.07, type: 'square', gain: 0.25 });
