@@ -4,7 +4,18 @@ import { interpolateFrame } from './CharacterSprite.js';
 
 let nextAttackId = 1;
 
-const BUSY_STATES = new Set(['punch', 'kick', 'special', 'super', 'hitstun', 'stunned']);
+const ATTACK_STATES = new Set(['jab', 'hook', 'highKick', 'lowKick']);
+const BUSY_STATES = new Set(['jab', 'hook', 'highKick', 'lowKick', 'hitstun', 'stunned']);
+
+// Where each basic move's hitbox sits vertically (purely cosmetic/flavor for
+// now - block still stops all of them the same way; see README if that
+// changes later).
+const HIT_HEIGHT = {
+  jab: { y: 100, h: 60 },
+  hook: { y: 95, h: 65 },
+  highKick: { y: 150, h: 55 },
+  lowKick: { y: 55, h: 50 }
+};
 
 export class Character {
   constructor(data, { playerIndex, x, facing, isAI = false, difficulty = 'normal' }) {
@@ -48,7 +59,7 @@ export class Character {
   }
 
   isAttacking() {
-    return this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.state === 'super';
+    return ATTACK_STATES.has(this.state);
   }
 
   setState(state) {
@@ -63,37 +74,16 @@ export class Character {
     }
   }
 
-  resolveMoveKey(wantsSuper, wantsSpecial2) {
-    const moves = this.data.moves;
-    if (wantsSuper && this.energy >= moves.super.energyCost) return 'super';
-    if (wantsSpecial2 && moves.special2 && this.energy >= moves.special2.energyCost) return 'special2';
-    if (moves.special1 && this.energy >= moves.special1.energyCost) return 'special1';
-    return null;
-  }
-
   startAttack(key) {
-    const moves = this.data.moves;
-    const move = key === 'punch' || key === 'kick' ? moves[key] : moves[key];
+    const move = this.data.moves[key];
     if (!move) return;
-    if (key === 'special1' || key === 'special2') {
-      this.energy = Math.max(0, this.energy - move.energyCost);
-      this.setState('special');
-    } else if (key === 'super') {
-      this.energy = Math.max(0, this.energy - move.energyCost);
-      this.setState('super');
-    } else {
-      this.setState(key);
-    }
+    this.setState(key);
     this.activeMoveKey = key;
     this.activeMove = move;
     this.hitsLandedThisAttack = 0;
     this.attackId = nextAttackId++;
     this.vx = 0;
-
-    if (move.projectile) {
-      this.events.push({ type: 'spawnProjectile', move, x: this.x + this.facing * 50, y: GROUND_Y - 80, facing: this.facing, owner: this.playerIndex });
-    }
-    this.events.push({ type: 'sfx', sound: key === 'punch' ? 'punch' : key === 'kick' ? 'kick' : key === 'super' ? 'super' : 'special' });
+    this.events.push({ type: 'sfx', sound: key });
   }
 
   isHitActive() {
@@ -119,9 +109,10 @@ export class Character {
   getHitbox() {
     if (!this.isHitActive() || !this.activeMove) return null;
     const range = this.activeMove.range;
-    const w = this.activeMove.projectile ? 0 : Math.min(range, 120);
+    const w = Math.min(range, 120);
     const originX = this.x + (this.facing > 0 ? 20 : -20 - w);
-    return { x: originX, y: GROUND_Y - 120, w, h: 70 };
+    const hb = HIT_HEIGHT[this.activeMoveKey] || { y: 120, h: 70 };
+    return { x: originX, y: GROUND_Y - hb.y, w, h: hb.h };
   }
 
   receiveHit(move, attackerFacing, { blocked = false } = {}) {
@@ -219,19 +210,12 @@ export class Character {
     }
 
     if (input.punchPressed && this.canAct()) {
-      this.startAttack('punch');
+      this.startAttack(input.down ? 'hook' : 'jab');
       return;
     }
     if (input.kickPressed && this.canAct()) {
-      this.startAttack('kick');
+      this.startAttack(input.down ? 'lowKick' : 'highKick');
       return;
-    }
-    if (input.specialPressed && this.canAct()) {
-      const key = this.resolveMoveKey(this.energy >= this.maxEnergy, input.down);
-      if (key) {
-        this.startAttack(key);
-        return;
-      }
     }
 
     if (input.block) {
