@@ -1,0 +1,93 @@
+:root {
+  --color-bg: #0b0b14;
+  --color-p1: #4fb6ff;
+  --color-p2: #ff5a6e;
+  --color-accent: #f4d03f;
+  --color-text: #f4f2ea;
+  --font-display: 'Press Start 2P', monospace;
+  --font-logo: 'Bangers', 'Press Start 2P', cursive;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+button {
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+#game-canvas {
+  display: block;
+  image-rendering: auto;
+  background: #000;
+}
+
+#ui-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#ui-root > * {
+  pointer-events: auto;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background: rgba(8, 8, 16, 0.55);
+}
+
+#orientation-warning {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  background: #0b0b14;
+  color: var(--color-accent);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+}
+
+@media (pointer: coarse) and (orientation: portrait) {
+  #orientation-warning {
+    display: flex;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
