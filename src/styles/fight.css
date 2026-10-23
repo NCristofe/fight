@@ -47,6 +47,16 @@
 }
 .round-pips span.won { background: var(--color-accent); }
 
+.hud-disarmed {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #ff6b6b;
+  text-shadow: 2px 2px 0 #000;
+  visibility: hidden;
+  animation: pulseEnergy 0.4s infinite alternate;
+}
+.hud-disarmed.is-visible { visibility: visible; }
+
 .hud-center { padding-top: 4px; }
 .hud-timer {
   font-size: clamp(16px, 3vw, 28px);
