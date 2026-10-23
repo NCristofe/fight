@@ -68,22 +68,9 @@ export class CombatSystem {
 
     attacker.hitsLandedThisAttack = pulseIndex + 1;
 
-    const defenderCountering =
-      defender.state === 'special' &&
-      defender.activeMove &&
-      defender.activeMove.counter &&
-      defender.isHitActive();
-
-    if (defenderCountering) {
-      const counterDamage = attacker.receiveHit(defender.activeMove, defender.facing, { blocked: false });
-      defender.hitsLandedThisAttack = (defender.currentPulseIndex?.() ?? 0) + 1;
-      this.hitEvents.push({ attackerIndex: defender.playerIndex, defenderIndex: attacker.playerIndex, damage: counterDamage, blocked: false, countered: true, x: attacker.x, y: GROUND_Y - 100 });
-      return;
-    }
-
     const blocked = defender.state === 'block';
-    const damage = defender.receiveHit(attacker.activeMove, attacker.facing, { blocked });
-    this.hitEvents.push({ attackerIndex: attacker.playerIndex, defenderIndex: defender.playerIndex, damage, blocked, x: defender.x, y: GROUND_Y - 100 });
+    const { damage, critical } = defender.receiveHit(attacker.activeMove, attacker.facing, { blocked });
+    this.hitEvents.push({ attackerIndex: attacker.playerIndex, defenderIndex: defender.playerIndex, damage, blocked, critical, x: defender.x, y: GROUND_Y - 100 });
   }
 
   reset() {
