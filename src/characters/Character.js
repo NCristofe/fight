@@ -30,6 +30,7 @@ export class Character {
     this.vy = 0;
     this.facing = facing;
     this.grounded = true;
+    this.hasSword = true;
 
     this.maxHealth = data.stats.maxHealth;
     this.health = this.maxHealth;
