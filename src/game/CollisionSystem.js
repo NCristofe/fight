@@ -8,6 +8,8 @@ export function rectsOverlap(a, b) {
 /** Keeps the two fighters from standing on top of each other. */
 export function separateFighters(p1, p2) {
   if (p1.health <= 0 || p2.health <= 0) return;
+  // airborne fighters can cross over each other (lets a disarmed fighter jump over to its sword)
+  if (!p1.grounded || !p2.grounded) return;
   const dx = p2.x - p1.x;
   const dist = Math.abs(dx);
   if (dist >= PUSH_DISTANCE || dist === 0) return;
