@@ -1,7 +1,7 @@
 // Renders on-screen touch controls for one player and exposes the same
 // held/justPressed shape as KeyboardController (keyed by action name
 // instead of key code), so InputManager can merge both uniformly.
-const ACTIONS = ['left', 'right', 'up', 'down', 'punch', 'kick', 'block', 'special'];
+const ACTIONS = ['left', 'right', 'up', 'down', 'punch', 'kick', 'block'];
 
 export class TouchController {
   constructor(playerIndex, mode = 'single') {
@@ -59,20 +59,11 @@ export class TouchController {
     const actionGroup = document.createElement('div');
     actionGroup.className = 'touch-group touch-group--action';
     this.addButton('block', 'DEF', actionGroup);
-    this.addButton('special', 'ESP', actionGroup, 'touch-btn--special');
     this.addButton('punch', 'SOCO', actionGroup);
     this.addButton('kick', 'CHUTE', actionGroup);
 
     this.container.appendChild(moveGroup);
     this.container.appendChild(actionGroup);
-  }
-
-  setEnergyFull(isFull) {
-    const specialBtn = this.buttons.find((b) => b.dataset.action === 'special');
-    if (specialBtn) {
-      specialBtn.classList.toggle('is-super-ready', isFull);
-      specialBtn.textContent = isFull ? 'SUPER' : 'ESP';
-    }
   }
 
   mount(root) {
@@ -88,11 +79,9 @@ export class TouchController {
       punch: this.held.has('punch'),
       kick: this.held.has('kick'),
       block: this.held.has('block'),
-      special: this.held.has('special'),
       upPressed: this.justPressed.has('up'),
       punchPressed: this.justPressed.has('punch'),
-      kickPressed: this.justPressed.has('kick'),
-      specialPressed: this.justPressed.has('special')
+      kickPressed: this.justPressed.has('kick')
     };
   }
 
