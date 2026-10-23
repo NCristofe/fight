@@ -20,7 +20,7 @@ export class AIController {
     this.profile = DIFFICULTY_PROFILES[difficulty] || DIFFICULTY_PROFILES.normal;
   }
 
-  decide(self, opponent) {
+  decide(self, opponent, groundSword) {
     const dx = opponent.x - self.x;
     const dist = Math.abs(dx);
     const dir = Math.sign(dx) || 1;
@@ -32,6 +32,16 @@ export class AIController {
     this.wantPunch = false;
     this.wantKick = false;
     this.wantCrouch = false;
+
+    if (!self.hasSword) {
+      if (groundSword && groundSword.owner === self.playerIndex) {
+        this.intent.moveDir = Math.sign(groundSword.x - self.x);
+        // jump over the opponent if they stand between us and the sword
+        const blocking = Math.sign(opponent.x - self.x) === this.intent.moveDir && dist < 70;
+        if (blocking && Math.random() < 0.5) this.intent.wantJump = true;
+      }
+      return;
+    }
 
     const opponentAttacking = opponent.isAttacking() && opponent.stateTime < (opponent.activeMove?.startup || 0) + (opponent.activeMove?.active || 0) + 60;
 
@@ -64,11 +74,12 @@ export class AIController {
     }
   }
 
-  getInput(dt, self, opponent) {
+  getInput(dt, self, opponent, groundSword = null) {
     this.decisionTimer -= dt * 1000;
     if (this.decisionTimer <= 0) {
-      this.decide(self, opponent);
-      this.decisionTimer = this.profile.reaction;
+      this.decide(self, opponent, groundSword);
+      // while hunting for a dropped sword, re-evaluate more often so it doesn't overshoot
+      this.decisionTimer = self.hasSword ? this.profile.reaction : 80;
     }
 
     this.prevHeld = { ...this.held };
