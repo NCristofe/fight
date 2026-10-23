@@ -4,17 +4,17 @@ import { interpolateFrame } from './CharacterSprite.js';
 
 let nextAttackId = 1;
 
-const ATTACK_STATES = new Set(['jab', 'hook', 'highKick', 'lowKick']);
-const BUSY_STATES = new Set(['jab', 'hook', 'highKick', 'lowKick', 'hitstun', 'stunned']);
+const ATTACK_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash']);
+const BUSY_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash', 'hitstun', 'stunned']);
 
-// Where each basic move's hitbox sits vertically (purely cosmetic/flavor for
+// Where each move's hitbox sits vertically (purely cosmetic/flavor for
 // now - block still stops all of them the same way; see README if that
 // changes later).
 const HIT_HEIGHT = {
-  jab: { y: 100, h: 60 },
-  hook: { y: 95, h: 65 },
-  highKick: { y: 150, h: 55 },
-  lowKick: { y: 55, h: 50 }
+  slash: { y: 100, h: 65 },
+  heavySlash: { y: 95, h: 75 },
+  thrust: { y: 100, h: 55 },
+  lowSlash: { y: 55, h: 55 }
 };
 
 export class Character {
