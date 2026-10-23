@@ -22,17 +22,16 @@ function paintPortrait(canvas, character, big = false) {
   const w = canvas.width;
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, character.palette.primary + 'cc');
+  const grad = ctx.createRadialGradient(w / 2, h * 0.55, 10, w / 2, h * 0.55, h * 0.65);
+  grad.addColorStop(0, '#2a2a40');
   grad.addColorStop(1, '#101018');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
   const idlePose = getAnimation('idle').frames[0].pose;
   const scale = big ? 1.5 : 1;
   ctx.save();
-  ctx.translate(0, 0);
   ctx.scale(scale, scale);
-  drawCharacter(ctx, w / scale / 2, h / scale - 14, 1, idlePose, character.palette, character.prop);
+  drawCharacter(ctx, w / scale / 2, h / scale - 14, 1, idlePose);
   ctx.restore();
 }
 
@@ -70,7 +69,6 @@ export class CharacterSelect {
             <h3 class="cs-name"></h3>
             <p class="cs-title-text"></p>
             <p class="cs-bio"></p>
-            <ul class="cs-moves"></ul>
           </div>
         </div>
       </div>
@@ -204,13 +202,6 @@ export class CharacterSelect {
     this.el.querySelector('.cs-name').textContent = focusChar.name;
     this.el.querySelector('.cs-title-text').textContent = focusChar.title;
     this.el.querySelector('.cs-bio').textContent = focusChar.bio;
-    const movesList = this.el.querySelector('.cs-moves');
-    movesList.innerHTML = '';
-    Object.values(focusChar.moves).forEach((m) => {
-      const li = document.createElement('li');
-      li.textContent = m.name;
-      movesList.appendChild(li);
-    });
 
     if (this.mode === 'training' && this.cpuThinking && !this.p2Confirmed) {
       this.el.querySelector('.cs-title').textContent = 'CPU ESCOLHENDO...';
