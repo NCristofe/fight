@@ -53,14 +53,14 @@ export class TouchController {
     moveGroup.className = 'touch-group touch-group--move';
     this.addButton('left', '◀', moveGroup);
     this.addButton('right', '▶', moveGroup);
-    this.addButton('up', 'SALTO', moveGroup, 'touch-btn--wide');
+    this.addButton('up', 'PULAR', moveGroup, 'touch-btn--wide');
     this.addButton('down', 'AGACHAR', moveGroup, 'touch-btn--wide');
 
     const actionGroup = document.createElement('div');
     actionGroup.className = 'touch-group touch-group--action';
     this.addButton('block', 'DEF', actionGroup);
-    this.addButton('punch', 'SOCO', actionGroup);
-    this.addButton('kick', 'CHUTE', actionGroup);
+    this.addButton('punch', 'CORTE', actionGroup);
+    this.addButton('kick', 'ESTOC.', actionGroup);
 
     this.container.appendChild(moveGroup);
     this.container.appendChild(actionGroup);
