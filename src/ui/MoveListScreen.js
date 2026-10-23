@@ -1,19 +1,20 @@
 import { keyLabel } from '../utils/keyLabel.js';
 
 const MOVES = [
-  { label: 'Golpe Rapido', combo: (km) => keyLabel(km.punch), desc: 'Corte rapido, pouco dano' },
-  { label: 'Golpe Forte', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.punch)}`, desc: 'Corte pesado, lento, alto risco de critico' },
-  { label: 'Estocada', combo: (km) => keyLabel(km.kick), desc: 'Investida com a ponta da espada' },
-  { label: 'Golpe Baixo', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.kick)}`, desc: 'Corte rente ao chao' },
+  { label: 'Corte Rapido', combo: (km) => keyLabel(km.punch), desc: 'Corte diagonal rapido, avanca um passo' },
+  { label: 'Golpe Descendente', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.punch)}`, desc: 'Golpe pesado por cima, lento, muito critico' },
+  { label: 'Estocada', combo: (km) => keyLabel(km.kick), desc: 'Investida com a ponta da espada, longo alcance' },
+  { label: 'Rasteira', combo: (km) => `${keyLabel(km.down)} + ${keyLabel(km.kick)}`, desc: 'Corte rente ao chao' },
+  { label: 'Golpe Aereo', combo: (km) => `${keyLabel(km.up)}, ${keyLabel(km.punch)}`, desc: 'Corte em mergulho durante o pulo' },
   { label: 'Defesa', combo: (km) => keyLabel(km.block), desc: 'Segure para reduzir o dano recebido' },
   { label: 'Pular', combo: (km) => keyLabel(km.up), desc: '' },
   { label: 'Agachar', combo: (km) => keyLabel(km.down), desc: '' }
 ];
 
-function buildMoveColumn(keymap) {
+function buildMoveColumn(keymap, title) {
   const col = document.createElement('div');
   col.className = 'movelist-col';
-  col.innerHTML = '<h3>VOCE</h3>';
+  col.innerHTML = `<h3>${title}</h3>`;
   const table = document.createElement('div');
   table.className = 'movelist-table';
   MOVES.forEach((m) => {
@@ -46,7 +47,8 @@ export class MoveListScreen {
     root.appendChild(this.el);
 
     const body = this.el.querySelector('.movelist-body');
-    body.appendChild(buildMoveColumn(settings.keymap.p1));
+    body.appendChild(buildMoveColumn(settings.keymap.p1, callbacks.pvp ? 'JOGADOR 1' : 'VOCE'));
+    if (callbacks.pvp) body.appendChild(buildMoveColumn(settings.keymap.p2, 'JOGADOR 2'));
 
     const rules = document.createElement('div');
     rules.className = 'movelist-col movelist-col--rules';
@@ -54,7 +56,7 @@ export class MoveListScreen {
       <h3>GOLPE CRITICO</h3>
       <p>Um golpe critico causa mais dano e <strong>derruba a espada</strong> de quem foi atingido.</p>
       <p>Sem espada voce nao ataca e defende pior. Caminhe ate a espada caida para pega-la de volta.</p>
-      <p>Isso vale para a CPU tambem.</p>
+      <p>${callbacks.pvp ? 'Vale para os dois jogadores.' : 'Isso vale para a CPU tambem.'}</p>
     `;
     body.appendChild(rules);
 

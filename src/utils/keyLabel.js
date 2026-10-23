@@ -3,8 +3,8 @@ export const ACTION_LABELS = {
   right: 'Direita',
   up: 'Pular',
   down: 'Agachar',
-  punch: 'Soco',
-  kick: 'Chute',
+  punch: 'Corte',
+  kick: 'Estocada',
   block: 'Defesa'
 };
 

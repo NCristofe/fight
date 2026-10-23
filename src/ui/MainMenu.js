@@ -24,11 +24,11 @@ export class MainMenu {
     this.el.innerHTML = `
       <div class="menu-bg-grid"></div>
       <div class="menu-content">
-        <h1 class="logo">BR <span>FIGHTER</span><small>DUELO DE PODER</small></h1>
+        <h1 class="logo">DUELO<br /><span>DE LÂMINAS</span><small>COMBATE DE ESPADAS</small></h1>
         <nav class="menu-buttons">
           <button data-action="play">LUTAR CONTRA A CPU</button>
           <button data-action="training">TREINAMENTO</button>
-          <button data-action="pvp" class="is-coming-soon" disabled aria-disabled="true">PVP <em>EM BREVE</em></button>
+          <button data-action="pvp">PVP LOCAL <em>2 JOGADORES</em></button>
           <button data-action="settings">CONFIGURACOES</button>
           <button data-action="credits">CREDITOS</button>
         </nav>
@@ -44,6 +44,7 @@ export class MainMenu {
     };
     wire('play', callbacks.onPlay);
     wire('training', callbacks.onTraining);
+    wire('pvp', callbacks.onPvp);
     wire('settings', callbacks.onSettings);
     wire('credits', callbacks.onCredits);
 
