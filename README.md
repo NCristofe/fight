@@ -22,20 +22,24 @@ Requer Node.js 18+.
 
 ## Controles
 
+Golpes basicos (iguais para os dois jogadores e para a CPU): **Jab** (soco),
+**Gancho** (agachar + soco), **Chute Alto** (chute), **Chute Baixo** (agachar
++ chute) e **Defesa**. Uma tela simples com essa lista aparece antes de cada
+luta, com as teclas de cada jogador.
+
 **Jogador 1 (teclado):** A/D movem, W pula, S agacha, F soco, G chute,
-H defesa, R especial (segure S + R para o especial 2; com energia cheia,
-R executa o Especial Supremo).
+H defesa.
 
 **Jogador 2 (teclado):** setas movem/pulam/agacham, J soco, K chute,
-L defesa, O especial (mesma logica de S+R acima, usando seta-baixo + O).
+L defesa.
 
 Ambos os mapeamentos podem ser alterados em **Configuracoes**.
 
 **Toque:** em dispositivos com tela sensivel ao toque os controles virtuais
 aparecem automaticamente (configuravel em Configuracoes → Controles). Lado
-esquerdo move/pula/agacha, lado direito ataca/defende/especial. Em uma
-partida local de 2 jogadores no mesmo celular, cada jogador recebe um
-conjunto compacto de botoes no seu lado da tela.
+esquerdo move/pula/agacha, lado direito ataca/defende. Em uma partida local
+de 2 jogadores no mesmo celular, cada jogador recebe um conjunto compacto
+de botoes no seu lado da tela.
 
 `Esc` pausa a luta a qualquer momento (tambem pausa automaticamente ao
 perder o foco da janela/aba).
@@ -62,29 +66,33 @@ de hit, etc.), entao e seguro mexer em um sem quebrar os demais.
 
 Tudo que diferencia um lutador vive em
 [`src/characters/characterData.js`](src/characters/characterData.js): um
-objeto com `id`, `name`, `title`, `bio`, `palette` (cores), `prop`
-(acessorio visual), `stats` (vida, velocidade, forca, defesa) e `moves`
-(`punch`, `kick`, `special1`, `special2`, `super`), cada um com dano,
-tempos de `startup`/`active`/`recovery`, alcance e custo de energia.
+objeto com `id`, `name`, `title`, `bio`, `stats` (vida, velocidade, forca,
+defesa) e `moves`. Hoje todo personagem usa o mesmo conjunto basico de
+golpes (`BASIC_MOVES` no topo do arquivo: `jab`, `hook`, `highKick`,
+`lowKick`), cada um com dano, tempos de `startup`/`active`/`recovery` e
+alcance — e e so o que CombatSystem/Character leem, entao e seguro trocar
+os numeros ou dar a um personagem um `moves` proprio (copiando e editando
+`BASIC_MOVES`) sem tocar no sistema de combate.
 
 Para adicionar um personagem novo, basta copiar um bloco existente, trocar
 os valores e adicionar o objeto ao array `CHARACTERS`. Ele aparece
 automaticamente na tela de selecao e funciona com toda a logica de
-combate, IA e HUD — nenhum desses sistemas lê nomes de personagem
-diretamente, apenas os campos genericos descritos acima.
+combate, IA e HUD.
 
-Props visuais disponiveis hoje: `hair_gray`, `hair_dark`, `cap_green`,
-`braids` (ver `drawProp` em `CharacterSprite.js`). Adicionar um prop novo e
-so acrescentar outro `else if` ali.
+Golpes especiais/energia existiam numa versao anterior do projeto e foram
+removidos de propósito para manter o combate simples por enquanto — a
+infraestrutura (projeteis, contra-ataques, barra de energia) ainda existe
+em `CombatSystem.js`/`Character.js` e pode ser religada depois.
 
-## Substituindo os sprites provisorios por arte definitiva
+## Substituindo os bonecos-palito por arte definitiva
 
-Os lutadores hoje sao desenhados em tempo real por um "rig" vetorial
-(`src/characters/CharacterSprite.js` + `characterAnimations.js`): um
-boneco de papel com membros que giram conforme poses pre-definidas por
-estado (`idle`, `punch`, `special`, etc.). Isso evita retangulos coloridos
-estaticos e ja anima tudo, mas é propositalmente generico — o ponto certo
-para plugar sprites de pixel art definitivos.
+Os lutadores hoje sao bonecos-palito pretos genericos desenhados em tempo
+real por um "rig" vetorial (`src/characters/CharacterSprite.js` +
+`characterAnimations.js`): um boneco de linhas com membros que giram
+conforme poses pre-definidas por estado (`idle`, `jab`, `hook`,
+`highKick`, `lowKick`, etc.), interpoladas suavemente quadro a quadro. Isso
+evita retangulos coloridos estaticos e ja anima tudo, mas é propositalmente
+generico — o ponto certo para plugar sprites de pixel art definitivos.
 
 Para trocar por sprite sheets reais:
 
@@ -104,15 +112,19 @@ personagem e desenhado, entao essa troca e isolada ao Renderer.
 ## Funcionalidades implementadas
 
 - Menu principal, selecao de personagens (estilo KOF, com dois cursores
-  independentes para 2 jogadores), HUD de luta, configuracoes e creditos.
-- Movimento, pulo, agachar, soco, chute, defesa (com dano reduzido),
-  combos simples por janela de tempo, 2 especiais + um Especial Supremo
-  por personagem, barra de energia.
+  independentes para 2 jogadores), tela de golpes basicos antes da luta,
+  HUD de luta, configuracoes e creditos.
+- Movimento, pulo, agachar, 4 golpes basicos (jab, gancho, chute alto,
+  chute baixo), defesa (com dano reduzido), combos simples por janela de
+  tempo.
+- Efeitos de impacto (particulas, faiscas, ondas de choque) e um pequeno
+  "hit-stop" (congelamento breve no momento do golpe) para dar peso aos
+  acertos.
 - Sistema de rodadas (melhor de 3), cronometro, mensagens de
   ROUND/FIGHT/K.O./VITORIA, modo Treinamento com rodadas infinitas.
 - IA com 3 dificuldades (reacao, agressividade e chance de bloqueio
   diferentes — nao apenas vida extra).
-- 4 personagens joga veis (Lula, Bolsonaro, Marina Silva, Ciro Gomes),
+- 4 personagens jogaveis (Lula, Bolsonaro, Marina Silva, Ciro Gomes),
   arquitetura pronta para novos.
 - 3 arenas originais com camadas de fundo animadas.
 - Audio 100% sintetizado (efeitos e musica), sem arquivos externos.
@@ -124,8 +136,11 @@ personagem e desenhado, entao essa troca e isolada ao Renderer.
 ## O que ainda depende de recursos externos
 
 - **Arte final (pixel art).** Os personagens e cenarios atuais sao
-  silhuetas vetoriais proprias, claramente provisórias (ver secao acima
-  para o caminho de substituicao).
+  bonecos-palito/silhuetas vetoriais proprias, claramente provisórias (ver
+  secao acima para o caminho de substituicao).
+- **Golpes especiais e barra de energia.** Removidos de propósito nesta
+  passada para manter o combate simples; a base (projeteis, contra-ataque)
+  continua no codigo para religar depois.
 - **Trilha sonora/efeitos "de verdade".** Hoje tudo e sintetizado via
   Web Audio API; trocar por arquivos `.mp3`/`.ogg` compostos originalmente
   so exige carrega-los em `AudioManager` no lugar das chamadas a
