@@ -78,20 +78,30 @@ export class AudioManager {
 
   sfx(name) {
     switch (name) {
-      case 'jab':
-        this.tone({ freq: 240, slideTo: 150, duration: 0.05, type: 'square', gain: 0.3 });
+      case 'slash':
+        this.noise({ duration: 0.09, gain: 0.22 });
+        this.tone({ freq: 900, slideTo: 300, duration: 0.09, type: 'sawtooth', gain: 0.12 });
         break;
-      case 'hook':
-        this.noise({ duration: 0.07, gain: 0.25 });
-        this.tone({ freq: 140, slideTo: 55, duration: 0.14, type: 'square', gain: 0.4, delay: 0.03 });
+      case 'heavySlash':
+        this.noise({ duration: 0.14, gain: 0.3 });
+        this.tone({ freq: 700, slideTo: 140, duration: 0.18, type: 'sawtooth', gain: 0.18 });
         break;
-      case 'highKick':
+      case 'thrust':
         this.noise({ duration: 0.06, gain: 0.2 });
-        this.tone({ freq: 260, slideTo: 110, duration: 0.1, type: 'triangle', gain: 0.3, delay: 0.05 });
+        this.tone({ freq: 500, slideTo: 900, duration: 0.08, type: 'triangle', gain: 0.15 });
         break;
-      case 'lowKick':
-        this.noise({ duration: 0.1, gain: 0.35 });
-        this.tone({ freq: 100, slideTo: 50, duration: 0.09, type: 'square', gain: 0.3 });
+      case 'lowSlash':
+        this.noise({ duration: 0.11, gain: 0.25 });
+        this.tone({ freq: 600, slideTo: 200, duration: 0.11, type: 'sawtooth', gain: 0.14 });
+        break;
+      case 'disarm':
+        this.tone({ freq: 1800, slideTo: 900, duration: 0.25, type: 'square', gain: 0.22 });
+        this.tone({ freq: 2400, slideTo: 1200, duration: 0.2, type: 'triangle', gain: 0.18, delay: 0.03 });
+        this.noise({ duration: 0.2, gain: 0.35 });
+        this.tone({ freq: 300, slideTo: 150, duration: 0.12, type: 'square', gain: 0.2, delay: 0.3 });
+        break;
+      case 'pickup':
+        this.tone({ freq: 500, slideTo: 1000, duration: 0.14, type: 'triangle', gain: 0.25 });
         break;
       case 'block':
         this.tone({ freq: 650, slideTo: 420, duration: 0.08, type: 'triangle', gain: 0.25 });
