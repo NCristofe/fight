@@ -19,10 +19,36 @@ Requer Node.js 18+.
 
 - **Lutar contra a CPU** — melhor de 3 rodadas.
 - **Treinamento** — contra a CPU, tempo e rodadas infinitos.
-- **PVP** — marcado como "Em breve" (botao desativado).
+- **PVP local** — dois jogadores no mesmo teclado (P1: A/D/W/S + F/G/H, P2: setas + J/K/L).
+- **PVP online** — cada jogador no seu dispositivo (veja "Jogando online" abaixo).
 
 Nao ha selecao de personagem: todos os lutadores sao iguais (bonecos-palito
 pretos). Voce e o "Jogador" a esquerda, o adversario e a "CPU".
+
+## Jogando online (dois dispositivos)
+
+O servidor de salas ja vem junto: `npm run dev` sobe o jogo **e** o servidor
+(WebSocket em `/ws`, mesma porta).
+
+1. Rode `npm run dev`. O terminal mostra dois enderecos: `Local` e `Network`
+   (ex.: `http://192.168.0.10:5173`).
+2. Os dois dispositivos precisam abrir **o mesmo endereco**. Para jogar de dois
+   aparelhos diferentes, use o endereco `Network` (nao o `localhost`), com os
+   dois no mesmo wifi. Se o firewall do Windows perguntar, permita o acesso.
+3. Um escolhe **PVP ONLINE → CRIAR SALA** e passa o codigo de 4 letras; o outro
+   escolhe **ENTRAR EM UMA SALA** e digita o codigo.
+4. Os dois veem a tela de golpes e clicam em LUTAR para comecar.
+
+Como funciona: quem cria a sala roda a luta inteira (ele e o Jogador da esquerda)
+e envia o estado a cada passo; quem entra so envia seus comandos e desenha o que
+recebe. Por isso quem entra sente um pequeno atraso (uma ida e volta de rede),
+imperceptivel no mesmo wifi. Online o jogo nao pausa ao perder o foco da janela,
+senao congelaria a partida do oponente.
+
+Para jogar pela internet (fora da sua rede): `npm run build && npm start`
+(serve o jogo e o servidor de salas na porta 3000, ou `PORT=...`) em um
+servidor publico, ou exponha a porta com um tunel (cloudflared, ngrok). O
+endereco funciona igual para os dois jogadores.
 
 ## Golpes e espada
 
