@@ -1,11 +1,13 @@
 :root {
-  --color-bg: #0b0b14;
-  --color-p1: #4fb6ff;
-  --color-p2: #ff5a6e;
-  --color-accent: #f4d03f;
-  --color-text: #f4f2ea;
-  --font-display: 'Press Start 2P', monospace;
-  --font-logo: 'Bangers', 'Press Start 2P', cursive;
+  --color-bg: #0e0907;
+  --color-ink: #17100c;
+  --color-paper: #f3e6c8;
+  --color-p1: #e8c35c;
+  --color-p2: #d4412f;
+  --color-accent: #e8c35c;
+  --color-text: #f3e6c8;
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-logo: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
 }
 
 * {
@@ -20,6 +22,7 @@ html, body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-display);
+  font-weight: 700;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
@@ -64,7 +67,7 @@ button {
   align-items: center;
   justify-content: center;
   overflow: auto;
-  background: rgba(8, 8, 16, 0.55);
+  background: transparent;
 }
 
 #orientation-warning {
