@@ -18,6 +18,7 @@ export class FightHUD {
           <div class="hud-name">${p1.data.name}</div>
           <div class="health-bar"><div class="health-fill" data-p="1"></div></div>
           <div class="round-pips" data-p="1"></div>
+          <div class="hud-disarmed" data-p="1">SEM ESPADA!</div>
         </div>
         <div class="hud-center">
           <div class="hud-timer">60</div>
@@ -26,6 +27,7 @@ export class FightHUD {
           <div class="hud-name">${p2.data.name}</div>
           <div class="health-bar"><div class="health-fill" data-p="2"></div></div>
           <div class="round-pips" data-p="2"></div>
+          <div class="hud-disarmed" data-p="2">SEM ESPADA!</div>
         </div>
       </div>
       <div class="hud-combo hud-combo--p1"></div>
@@ -44,7 +46,6 @@ export class FightHUD {
         <div class="matchend-box">
           <h2 class="matchend-title"></h2>
           <button data-action="rematch">REVANCHE</button>
-          <button data-action="select">ESCOLHER PERSONAGEM</button>
           <button data-action="menu">MENU PRINCIPAL</button>
         </div>
       </div>
@@ -88,7 +89,6 @@ export class FightHUD {
 
   handleMatchEndAction(action) {
     if (action === 'rematch') this.callbacks.onRematch?.();
-    else if (action === 'select') this.callbacks.onReselect?.();
     else if (action === 'menu') this.callbacks.onMenu?.();
   }
 
@@ -96,7 +96,9 @@ export class FightHUD {
     const { p1, p2, round } = this;
     this.el.querySelector('.health-fill[data-p="1"]').style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
     this.el.querySelector('.health-fill[data-p="2"]').style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
-    this.el.querySelector('.hud-timer').textContent = Math.ceil(round.timeLeft);
+    this.el.querySelector('.hud-timer').textContent = round.infiniteTime ? '∞' : Math.ceil(round.timeLeft);
+    this.el.querySelector('.hud-disarmed[data-p="1"]').classList.toggle('is-visible', !p1.hasSword && p1.health > 0);
+    this.el.querySelector('.hud-disarmed[data-p="2"]').classList.toggle('is-visible', !p2.hasSword && p2.health > 0);
 
     const pips1 = this.el.querySelectorAll('[data-p="1"].round-pips span');
     const pips2 = this.el.querySelectorAll('[data-p="2"].round-pips span');
