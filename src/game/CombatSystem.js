@@ -70,7 +70,7 @@ export class CombatSystem {
 
     const blocked = defender.state === 'block';
     const { damage, critical } = defender.receiveHit(attacker.activeMove, attacker.facing, { blocked });
-    this.hitEvents.push({ attackerIndex: attacker.playerIndex, defenderIndex: defender.playerIndex, damage, blocked, critical, x: defender.x, y: GROUND_Y - 100 });
+    this.hitEvents.push({ attackerIndex: attacker.playerIndex, defenderIndex: defender.playerIndex, damage, blocked, critical, x: defender.x, y: defender.y - 100 });
   }
 
   reset() {
