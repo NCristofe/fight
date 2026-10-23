@@ -38,9 +38,37 @@ class ParticleSystem {
     }
   }
 
+  /** Short streak lines flying out from a hit - the "impact" juice. */
+  spawnSpark(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 240 + Math.random() * 260;
+      this.particles.push({
+        type: 'spark',
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 140 + Math.random() * 100,
+        maxLife: 220,
+        length: 14 + Math.random() * 12,
+        color
+      });
+    }
+  }
+
+  /** One expanding ring on a landed hit. */
+  spawnRing(x, y, color) {
+    this.particles.push({ type: 'ring', x, y, radius: 6, life: 220, maxLife: 220, color });
+  }
+
   update(dt) {
     for (const p of this.particles) {
-      p.vy += 500 * dt;
+      if (p.type === 'ring') {
+        p.life -= dt * 1000;
+        continue;
+      }
+      if (p.type !== 'spark') p.vy += 500 * dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.life -= dt * 1000;
@@ -50,11 +78,31 @@ class ParticleSystem {
 
   draw(ctx) {
     for (const p of this.particles) {
-      ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+      const t = Math.max(0, p.life / p.maxLife);
+      if (p.type === 'ring') {
+        ctx.globalAlpha = t * 0.85;
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius + (1 - t) * 34, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (p.type === 'spark') {
+        ctx.save();
+        ctx.globalAlpha = t;
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.vx * 0.02, p.y - p.vy * 0.02);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.globalAlpha = t;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
   }
@@ -98,22 +146,7 @@ export class Renderer {
   drawFighter(fighter) {
     const pose = fighter.getRenderPose();
     const flash = fighter.flashTimer > 0;
-    drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, fighter.data.palette, fighter.data.prop, { flash });
-  }
-
-  drawProjectile(proj) {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.translate(proj.x, proj.y);
-    ctx.fillStyle = proj.move.color || '#fff';
-    ctx.beginPath();
-    ctx.arc(0, 0, 16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 0.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, 24, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, { flash });
   }
 
   drawShadow(fighter) {
