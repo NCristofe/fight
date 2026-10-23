@@ -69,6 +69,18 @@
   outline: none;
 }
 
+.menu-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #555;
+}
+.menu-buttons button em {
+  font-style: normal;
+  color: var(--color-accent);
+  margin-left: 6px;
+  font-size: 0.8em;
+}
+
 .menu-footer {
   max-width: 560px;
   font-family: sans-serif;
@@ -173,7 +185,8 @@
   padding: 14px 18px;
   min-width: 280px;
 }
-.movelist-col--cpu { border-color: var(--color-p2); font-family: sans-serif; font-size: 12px; }
+.movelist-col--rules { border-color: var(--color-p2); font-family: sans-serif; font-size: 12px; line-height: 1.5; max-width: 300px; }
+.movelist-col--rules strong { color: var(--color-accent); }
 .movelist-col h3 { font-size: 12px; color: var(--color-accent); margin-top: 0; }
 .movelist-table { display: flex; flex-direction: column; gap: 8px; }
 .movelist-row {
