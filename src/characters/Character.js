@@ -1,11 +1,11 @@
 import { GROUND_Y, STAGE_LEFT, STAGE_RIGHT, GRAVITY, MAX_ENERGY } from '../utils/constants.js';
 import { getAnimation } from './characterAnimations.js';
-import { interpolateFrame } from './CharacterSprite.js';
+import { interpolateFrame, lerpPose } from './CharacterSprite.js';
 
 let nextAttackId = 1;
 
-const ATTACK_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash']);
-const BUSY_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash', 'hitstun', 'stunned']);
+const ATTACK_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash', 'airSlash']);
+const BUSY_STATES = new Set(['slash', 'heavySlash', 'thrust', 'lowSlash', 'airSlash', 'hitstun', 'stunned']);
 
 // Where each move's hitbox sits vertically (purely cosmetic/flavor for
 // now - block still stops all of them the same way; see README if that
@@ -14,7 +14,8 @@ const HIT_HEIGHT = {
   slash: { y: 100, h: 65 },
   heavySlash: { y: 95, h: 75 },
   thrust: { y: 100, h: 55 },
-  lowSlash: { y: 55, h: 55 }
+  lowSlash: { y: 55, h: 55 },
+  airSlash: { y: 90, h: 80 }
 };
 
 export class Character {
@@ -83,7 +84,7 @@ export class Character {
     this.activeMove = move;
     this.hitsLandedThisAttack = 0;
     this.attackId = nextAttackId++;
-    this.vx = 0;
+    if (key !== 'airSlash') this.vx = 0;
     this.events.push({ type: 'sfx', sound: key });
   }
 
@@ -104,7 +105,7 @@ export class Character {
     const crouch = this.state === 'crouch';
     const h = crouch ? 95 : 150;
     const w = 56;
-    return { x: this.x - w / 2, y: GROUND_Y - h, w, h };
+    return { x: this.x - w / 2, y: this.y - h, w, h };
   }
 
   getHitbox() {
@@ -113,7 +114,7 @@ export class Character {
     const w = Math.min(range, 120);
     const originX = this.x + (this.facing > 0 ? 20 : -20 - w);
     const hb = HIT_HEIGHT[this.activeMoveKey] || { y: 120, h: 70 };
-    return { x: originX, y: GROUND_Y - hb.y, w, h: hb.h };
+    return { x: originX, y: this.y - hb.y, w, h: hb.h };
   }
 
   receiveHit(move, attackerFacing, { blocked = false } = {}) {
@@ -174,12 +175,12 @@ export class Character {
       const move = this.activeMove;
       if (move) {
         const total = move.startup + move.active + move.recovery;
-        if (move.dash && this.stateTime < move.startup + move.active) {
-          this.vx = this.facing * 340;
-        } else {
+        if (move.lunge && this.stateTime < move.startup + move.active) {
+          this.vx = this.facing * move.lunge;
+        } else if (this.grounded) {
           this.vx *= 0.8;
         }
-        if (this.stateTime >= total) this.setState('idle');
+        if (this.stateTime >= total) this.setState(this.grounded ? 'idle' : 'jump');
       } else {
         this.setState('idle');
       }
@@ -198,14 +199,17 @@ export class Character {
       if (!this.grounded) {
         this.grounded = true;
         this.vy = 0;
-        if (this.state === 'jump') this.setState('idle');
+        if (this.state === 'jump' || this.state === 'airSlash') this.setState('idle');
       }
     }
     this.clampToStage();
   }
 
   handleFreeInput(input) {
-    if (!this.grounded) return;
+    if (!this.grounded) {
+      if (input.punchPressed && this.hasSword && this.state === 'jump') this.startAttack('airSlash');
+      return;
+    }
 
     if (input.upPressed && this.canAct()) {
       this.vy = this.data.stats.jumpVelocity;
@@ -253,6 +257,11 @@ export class Character {
   }
 
   getRenderPose() {
+    if (this.state === 'jump') {
+      const rise = getAnimation('jump').frames[0].pose;
+      const fall = getAnimation('fall').frames[0].pose;
+      return lerpPose(rise, fall, Math.max(0, Math.min(1, (this.vy + 250) / 500)));
+    }
     const anim = getAnimation(this.state);
     const { pose } = interpolateFrame(anim, this.animElapsed);
     return pose;
@@ -266,6 +275,7 @@ export class Character {
     this.facing = facing;
     this.grounded = true;
     this.hasSword = true;
+    this.flashTimer = 0;
     this.health = this.maxHealth;
     this.energy = 0;
     this.comboCount = 0;
