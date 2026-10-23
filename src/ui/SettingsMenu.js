@@ -1,25 +1,5 @@
 import { Storage } from '../utils/Storage.js';
-
-const ACTION_LABELS = {
-  left: 'Esquerda',
-  right: 'Direita',
-  up: 'Pular',
-  down: 'Agachar',
-  punch: 'Soco',
-  kick: 'Chute',
-  block: 'Defesa',
-  special: 'Especial'
-};
-
-const KEY_LABELS = {
-  ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Space: 'Espaco'
-};
-
-function keyLabel(code) {
-  if (!code) return '-';
-  if (KEY_LABELS[code]) return KEY_LABELS[code];
-  return code.replace('Key', '').replace('Digit', '').replace('Arrow', '');
-}
+import { ACTION_LABELS, keyLabel } from '../utils/keyLabel.js';
 
 export class SettingsMenu {
   constructor(root, audio, settings, callbacks) {
@@ -108,7 +88,9 @@ export class SettingsMenu {
     const grid = this.el.querySelector(`.keymap-grid[data-player="${player}"]`);
     grid.innerHTML = '';
     const map = this.settings.keymap[player];
-    Object.keys(map).forEach((action) => {
+    Object.keys(map)
+      .filter((action) => ACTION_LABELS[action])
+      .forEach((action) => {
       const row = document.createElement('div');
       row.className = 'keymap-row';
       row.innerHTML = `<span>${ACTION_LABELS[action]}</span><button data-action="${action}">${keyLabel(map[action])}</button>`;

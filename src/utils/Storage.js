@@ -5,8 +5,8 @@ const DEFAULT_SETTINGS = {
   sfxVolume: 0.8,
   difficulty: 'normal',
   keymap: {
-    p1: { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', punch: 'KeyF', kick: 'KeyG', block: 'KeyH', special: 'KeyR' },
-    p2: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', punch: 'KeyJ', kick: 'KeyK', block: 'KeyL', special: 'KeyO' }
+    p1: { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', punch: 'KeyF', kick: 'KeyG', block: 'KeyH' },
+    p2: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', punch: 'KeyJ', kick: 'KeyK', block: 'KeyL' }
   },
   controlMode: 'auto' // 'auto' | 'keyboard' | 'touch'
 };

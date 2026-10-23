@@ -65,40 +65,49 @@ export const ANIMATIONS = {
     loop: false,
     frames: [{ duration: 1e9, pose: pose({ squash: 0.72, offsetY: 18, legFront: { hip: 55, knee: 80 }, legBack: { hip: -55, knee: 80 }, bodyLean: 6, headTilt: 4 }) }]
   },
-  jab: {
+  slash: {
     loop: false,
     frames: [
-      { duration: 50, pose: pose({ armFront: { shoulder: -55, elbow: 35 }, bodyLean: -4 }) },
-      { duration: 70, pose: pose({ armFront: { shoulder: 4, elbow: 2 }, bodyLean: 6, offsetX: 8 }) },
-      { duration: 40, pose: pose({ armFront: { shoulder: 0, elbow: 4 }, bodyLean: 4, offsetX: 6 }) },
-      { duration: 140, pose: pose({ armFront: { shoulder: -20, elbow: 15 }, bodyLean: 0 }) }
+      { duration: 50, pose: pose({ armFront: { shoulder: -110, elbow: 40 }, bodyLean: -10 }) },
+      { duration: 70, pose: pose({ armFront: { shoulder: 30, elbow: -10 }, bodyLean: 14, offsetX: 10 }) },
+      { duration: 40, pose: pose({ armFront: { shoulder: 50, elbow: -15 }, bodyLean: 10, offsetX: 10 }) },
+      { duration: 150, pose: pose({ armFront: { shoulder: -20, elbow: 15 }, bodyLean: 0 }) }
     ]
   },
-  hook: {
+  heavySlash: {
     loop: false,
     frames: [
-      { duration: 100, pose: pose({ armFront: { shoulder: -100, elbow: 60 }, bodyLean: -18, headTilt: -6 }) },
-      { duration: 90, pose: pose({ armFront: { shoulder: -20, elbow: 10 }, bodyLean: 4 }) },
-      { duration: 90, pose: pose({ armFront: { shoulder: 50, elbow: -5 }, bodyLean: 20, offsetX: 14 }) },
-      { duration: 180, pose: pose({ armFront: { shoulder: 10, elbow: 10 }, bodyLean: 4 }) }
+      { duration: 120, pose: pose({ armFront: { shoulder: -150, elbow: 60 }, bodyLean: -20, headTilt: -6, offsetY: -4 }) },
+      { duration: 80, pose: pose({ armFront: { shoulder: -40, elbow: 10 }, bodyLean: 6 }) },
+      { duration: 100, pose: pose({ armFront: { shoulder: 70, elbow: -20 }, bodyLean: 22, offsetX: 16, squash: 0.9 }) },
+      { duration: 220, pose: pose({ armFront: { shoulder: 20, elbow: 10 }, bodyLean: 6 }) }
     ]
   },
-  highKick: {
+  thrust: {
     loop: false,
     frames: [
-      { duration: 90, pose: pose({ legFront: { hip: -50, knee: 90 }, bodyLean: -10, armFront: { shoulder: 10, elbow: 20 } }) },
-      { duration: 90, pose: pose({ legFront: { hip: 85, knee: 6 }, bodyLean: 10, offsetX: 10 }) },
-      { duration: 50, pose: pose({ legFront: { hip: 80, knee: 4 }, bodyLean: 12, offsetX: 12 }) },
-      { duration: 200, pose: pose({ legFront: { hip: 10, knee: 10 }, bodyLean: 2 }) }
+      { duration: 70, pose: pose({ armFront: { shoulder: 10, elbow: -60 }, bodyLean: -8 }) },
+      {
+        duration: 70,
+        pose: pose({
+          armFront: { shoulder: -10, elbow: -5 },
+          bodyLean: 14,
+          offsetX: 26,
+          legFront: { hip: 40, knee: 10 },
+          legBack: { hip: -10, knee: 20 }
+        })
+      },
+      { duration: 30, pose: pose({ armFront: { shoulder: -8, elbow: -4 }, bodyLean: 16, offsetX: 28 }) },
+      { duration: 180, pose: pose({ armFront: { shoulder: -20, elbow: 15 }, bodyLean: 4, offsetX: 0 }) }
     ]
   },
-  lowKick: {
+  lowSlash: {
     loop: false,
     frames: [
-      { duration: 60, pose: pose({ legFront: { hip: -25, knee: 80 }, squash: 0.92, offsetY: 6 }) },
-      { duration: 80, pose: pose({ legFront: { hip: 55, knee: 10 }, squash: 0.9, offsetY: 8, bodyLean: 8 }) },
-      { duration: 40, pose: pose({ legFront: { hip: 50, knee: 8 }, squash: 0.9, offsetY: 8 }) },
-      { duration: 170, pose: pose({ legFront: { hip: 8, knee: 10 }, squash: 1, offsetY: 0 }) }
+      { duration: 70, pose: pose({ legFront: { hip: -20, knee: 70 }, armFront: { shoulder: 30, elbow: -30 }, squash: 0.88, offsetY: 8, bodyLean: -6 }) },
+      { duration: 80, pose: pose({ legFront: { hip: 40, knee: 15 }, armFront: { shoulder: -60, elbow: 20 }, squash: 0.86, offsetY: 10, bodyLean: 10 }) },
+      { duration: 40, pose: pose({ legFront: { hip: 38, knee: 14 }, armFront: { shoulder: -58, elbow: 18 }, squash: 0.86, offsetY: 10, bodyLean: 10 }) },
+      { duration: 170, pose: pose({ legFront: { hip: 8, knee: 10 }, armFront: { shoulder: -20, elbow: 15 }, squash: 1, offsetY: 0, bodyLean: 2 }) }
     ]
   },
   block: {
