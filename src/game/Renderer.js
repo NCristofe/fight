@@ -113,6 +113,10 @@ export class Renderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.particles = new ParticleSystem();
+    this.trails = new Map();
+    this.shakeMag = 0;
+    this.shakeUntil = 0;
+    this.shakeStart = 0;
     this.resize();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('orientationchange', () => this.resize());
@@ -133,24 +137,81 @@ export class Renderer {
     this.dpr = dpr;
   }
 
-  beginFrame() {
+  shake(magnitude, durationMs) {
+    const now = performance.now();
+    if (magnitude < this.shakeMag * this.shakeRemaining(now)) return;
+    this.shakeMag = magnitude;
+    this.shakeStart = now;
+    this.shakeUntil = now + durationMs;
+  }
+
+  shakeRemaining(now) {
+    if (now >= this.shakeUntil) return 0;
+    return (this.shakeUntil - now) / (this.shakeUntil - this.shakeStart);
+  }
+
+  beginFrame(now = performance.now()) {
     const ctx = this.ctx;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+    const k = this.shakeRemaining(now) * this.shakeMag;
+    const ox = k ? (Math.random() - 0.5) * 2 * k : 0;
+    const oy = k ? (Math.random() - 0.5) * 2 * k : 0;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, ox * this.dpr, oy * this.dpr);
+    ctx.clearRect(-20, -20, LOGICAL_WIDTH + 40, LOGICAL_HEIGHT + 40);
   }
 
   drawArena(arena, t) {
     arena.draw(this.ctx, t);
   }
 
-  drawFighter(fighter) {
+  drawFighter(fighter, now = performance.now()) {
     const pose = fighter.getRenderPose();
     const flash = fighter.flashTimer > 0;
-    drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, { flash, hasSword: fighter.hasSword });
+    const tip = drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, { flash, hasSword: fighter.hasSword });
+    this.updateTrail(fighter, tip, now);
   }
 
-  drawSwordOnGround(x) {
-    drawGroundSword(this.ctx, x, GROUND_Y);
+  // Records the blade tip while a swing is in its fast part, then fades it out.
+  updateTrail(fighter, tip, now) {
+    let trail = this.trails.get(fighter);
+    if (!trail) {
+      trail = [];
+      this.trails.set(fighter, trail);
+    }
+    const move = fighter.activeMove;
+    const swinging =
+      tip &&
+      move &&
+      fighter.isAttacking() &&
+      fighter.stateTime > move.startup * 0.3 &&
+      fighter.stateTime < move.startup + move.active + 70;
+    if (swinging) trail.push({ x: tip.x, y: tip.y, t: now });
+    while (trail.length && now - trail[0].t > 170) trail.shift();
+    if (trail.length < 2) return;
+
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let i = 1; i < trail.length; i++) {
+      const life = 1 - (now - trail[i].t) / 170;
+      if (life <= 0) continue;
+      ctx.globalAlpha = life * 0.35;
+      ctx.strokeStyle = '#bfe3ff';
+      ctx.lineWidth = 16 * life;
+      ctx.beginPath();
+      ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+      ctx.lineTo(trail[i].x, trail[i].y);
+      ctx.stroke();
+      ctx.globalAlpha = life * 0.9;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 6 * life;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  drawSwordOnGround(x, now = performance.now()) {
+    drawGroundSword(this.ctx, x, GROUND_Y, now);
   }
 
   drawShadow(fighter) {
