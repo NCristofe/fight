@@ -1,0 +1,15 @@
+{
+  "name": "br-fighter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BR Fighter - Duelo de Poder: jogo de luta 2D retro, satira ficticia da politica brasileira.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
