@@ -3,7 +3,7 @@
   to { background-position: 0 64px; }
 }
 
-.menu-bg-grid, .cs-bg, .settings-bg, .credits-bg {
+.menu-bg-grid, .cs-bg, .settings-bg, .credits-bg, .movelist-bg {
   position: absolute;
   inset: 0;
   background-image:
@@ -52,7 +52,7 @@
   width: min(360px, 80vw);
 }
 
-.menu-buttons button, .settings-back, .credits-back, .cs-footer button {
+.menu-buttons button, .settings-back, .credits-back, .cs-footer button, .movelist-footer button {
   font-size: clamp(11px, 2.4vw, 15px);
   padding: 14px 18px;
   background: linear-gradient(180deg, #2b2b45, #17172a);
@@ -62,7 +62,7 @@
   transition: transform 0.12s ease, background 0.12s ease;
 }
 .menu-buttons button:hover, .menu-buttons button:focus,
-.settings-back:hover, .credits-back:hover, .cs-footer button:hover {
+.settings-back:hover, .credits-back:hover, .cs-footer button:hover, .movelist-footer button:hover {
   background: var(--color-accent);
   color: #111;
   transform: translateY(-2px) scale(1.03);
@@ -146,6 +146,56 @@
   position: relative;
   z-index: 1;
   margin: 12px 0 24px;
+}
+
+/* Move list (pre-fight) */
+.movelist-screen h2 {
+  position: relative;
+  z-index: 1;
+  color: var(--color-accent);
+  font-size: clamp(16px, 3vw, 26px);
+  margin: 16px 0;
+}
+.movelist-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 920px;
+  padding: 0 16px;
+}
+.movelist-col {
+  background: rgba(20, 20, 36, 0.85);
+  border: 2px solid var(--color-p1);
+  border-radius: 8px;
+  padding: 14px 18px;
+  min-width: 280px;
+}
+.movelist-col--cpu { border-color: var(--color-p2); font-family: sans-serif; font-size: 12px; }
+.movelist-col h3 { font-size: 12px; color: var(--color-accent); margin-top: 0; }
+.movelist-table { display: flex; flex-direction: column; gap: 8px; }
+.movelist-row {
+  display: grid;
+  grid-template-columns: 90px 70px 1fr;
+  gap: 8px;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 11px;
+  border-top: 1px solid #333;
+  padding-top: 8px;
+}
+.movelist-row:first-child { border-top: none; padding-top: 0; }
+.movelist-name { color: #fff; font-weight: bold; }
+.movelist-keys { color: var(--color-accent); font-family: var(--font-display); font-size: 9px; }
+.movelist-desc { opacity: 0.75; }
+.movelist-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 16px;
+  margin: 20px 0 28px;
 }
 
 /* Credits */
