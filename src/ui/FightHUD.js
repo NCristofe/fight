@@ -28,10 +28,6 @@ export class FightHUD {
           <div class="round-pips" data-p="2"></div>
         </div>
       </div>
-      <div class="hud-bottom">
-        <div class="energy-bar"><div class="energy-fill" data-p="1"></div></div>
-        <div class="energy-bar"><div class="energy-fill" data-p="2"></div></div>
-      </div>
       <div class="hud-combo hud-combo--p1"></div>
       <div class="hud-combo hud-combo--p2"></div>
       <div class="hud-banner"></div>
@@ -100,10 +96,6 @@ export class FightHUD {
     const { p1, p2, round } = this;
     this.el.querySelector('.health-fill[data-p="1"]').style.width = `${Math.max(0, (p1.health / p1.maxHealth) * 100)}%`;
     this.el.querySelector('.health-fill[data-p="2"]').style.width = `${Math.max(0, (p2.health / p2.maxHealth) * 100)}%`;
-    this.el.querySelector('.energy-fill[data-p="1"]').style.width = `${(p1.energy / p1.maxEnergy) * 100}%`;
-    this.el.querySelector('.energy-fill[data-p="2"]').style.width = `${(p2.energy / p2.maxEnergy) * 100}%`;
-    this.el.querySelector('.energy-fill[data-p="1"]').classList.toggle('is-full', p1.energy >= p1.maxEnergy);
-    this.el.querySelector('.energy-fill[data-p="2"]').classList.toggle('is-full', p2.energy >= p2.maxEnergy);
     this.el.querySelector('.hud-timer').textContent = Math.ceil(round.timeLeft);
 
     const pips1 = this.el.querySelectorAll('[data-p="1"].round-pips span');
