@@ -5,6 +5,8 @@ export class KeyboardController {
     this.gameCodes = new Set();
 
     this.onKeyDown = (e) => {
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (this.gameCodes.has(e.code)) e.preventDefault();
       if (!this.held.has(e.code)) this.justPressed.add(e.code);
       this.held.add(e.code);
