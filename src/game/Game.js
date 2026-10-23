@@ -33,7 +33,7 @@ export class Game {
     this.sceneName = null;
     this.scene = null;
     this.bgTime = 0;
-    this.bgArena = ARENAS[2];
+    this.bgArena = ARENAS[1];
     this.fight = null;
 
     this.loop = new GameLoop(this.update.bind(this), this.render.bind(this));
@@ -92,18 +92,20 @@ export class Game {
     this.sceneName = 'menu';
     this.audio.startMusic('menu');
     this.scene = new MainMenu(this.uiRoot, this.audio, {
-      onPlay: () => this.goToMoveList({ isTraining: false }),
-      onTraining: () => this.goToMoveList({ isTraining: true }),
+      onPlay: () => this.goToMoveList({ isTraining: false, pvp: false }),
+      onTraining: () => this.goToMoveList({ isTraining: true, pvp: false }),
+      onPvp: () => this.goToMoveList({ isTraining: false, pvp: true }),
       onSettings: () => this.goToSettings(),
       onCredits: () => this.goToCredits()
     });
   }
 
-  goToMoveList({ isTraining }) {
+  goToMoveList({ isTraining, pvp }) {
     this.clearScene();
     this.sceneName = 'movelist';
     this.scene = new MoveListScreen(this.uiRoot, this.audio, this.settings, {
-      onStart: () => this.startFight({ isTraining }),
+      pvp,
+      onStart: () => this.startFight({ isTraining, pvp }),
       onBack: () => this.goToMainMenu()
     });
   }
@@ -128,13 +130,13 @@ export class Game {
 
   // ----- Fight -----
 
-  startFight({ isTraining }) {
+  startFight({ isTraining, pvp = false }) {
     this.clearScene();
     this.sceneName = 'fight';
     const arena = ARENAS[Math.floor(Math.random() * ARENAS.length)];
 
-    const p1 = new Character(createFighter('Jogador'), { playerIndex: 0, x: 280, facing: 1 });
-    const p2 = new Character(createFighter('CPU'), { playerIndex: 1, x: 680, facing: -1, isAI: true, difficulty: this.settings.difficulty });
+    const p1 = new Character(createFighter(pvp ? 'Jogador 1' : 'Jogador'), { playerIndex: 0, x: 280, facing: 1 });
+    const p2 = new Character(createFighter(pvp ? 'Jogador 2' : 'CPU'), { playerIndex: 1, x: 680, facing: -1, isAI: !pvp, difficulty: this.settings.difficulty });
     p1.startX = 280;
     p1.startFacing = 1;
     p2.startX = 680;
@@ -150,7 +152,8 @@ export class Game {
       round,
       arena,
       isTraining,
-      ai: new AIController(this.settings.difficulty),
+      pvp,
+      ai: pvp ? null : new AIController(this.settings.difficulty),
       matchEndHandled: false,
       hitStopTimer: 0,
       groundSword: null
@@ -159,9 +162,9 @@ export class Game {
     this.setupTouchForFight();
 
     this.hud = new FightHUD(this.uiRoot, p1, p2, round, {
-      onRestart: () => this.startFight({ isTraining }),
+      onRestart: () => this.startFight({ isTraining, pvp }),
       onMenu: () => this.goToMainMenu(),
-      onRematch: () => this.startFight({ isTraining }),
+      onRematch: () => this.startFight({ isTraining, pvp }),
       onPauseToggle: (paused) => this.loop.setPaused(paused)
     });
 
@@ -170,7 +173,8 @@ export class Game {
 
   setupTouchForFight() {
     if (!this.shouldShowTouch()) return;
-    this.input.enableTouch([0], 'single', this.uiRoot);
+    if (this.fight.pvp) this.input.enableTouch([0, 1], 'dual', this.uiRoot);
+    else this.input.enableTouch([0], 'single', this.uiRoot);
   }
 
   // ----- Loop -----
@@ -196,7 +200,7 @@ export class Game {
 
     if (round.isActive()) {
       const input1 = this.input.pollPlayer(0);
-      const input2 = ai.getInput(dt, p2, p1, this.fight.groundSword);
+      const input2 = this.fight.pvp ? this.input.pollPlayer(1) : ai.getInput(dt, p2, p1, this.fight.groundSword);
       p1.update(dt, input1, p2);
       p2.update(dt, input2, p1);
       // pickup must run before processEvents so its sfx event is consumed this frame
@@ -204,8 +208,8 @@ export class Game {
       this.checkSwordPickup(p2);
       this.processEvents(p1);
       this.processEvents(p2);
-      this.spawnBladeTrail(p1);
-      this.spawnBladeTrail(p2);
+      this.spawnLungeDust(p1);
+      this.spawnLungeDust(p2);
       this.combat.update(dt, [p1, p2]);
       // hits/disarms raised inside combat.update queue new events
       this.processEvents(p1);
@@ -213,16 +217,21 @@ export class Game {
 
       let hitStop = 0;
       for (const ev of this.combat.hitEvents) {
+        const attacker = ev.attackerIndex === 0 ? p1 : p2;
         if (ev.blocked) {
-          this.renderer.particles.spawnImpact(ev.x, ev.y, '#9fd8ff', 6);
-          hitStop = Math.max(hitStop, 25);
+          this.renderer.particles.spawnSpark(ev.x, ev.y, '#ffe9a8', 14);
+          this.renderer.particles.spawnRing(ev.x, ev.y, '#ffe9a8');
+          this.renderer.shake(3, 90);
+          hitStop = Math.max(hitStop, 45);
         } else if (ev.critical) {
+          this.renderer.shake(11, 260);
           this.renderer.particles.spawnImpact(ev.x, ev.y, '#ff6b6b', 16);
           this.renderer.particles.spawnSpark(ev.x, ev.y, '#ffffff', 18);
           this.renderer.particles.spawnRing(ev.x, ev.y, '#ff6b6b');
           this.renderer.particles.spawnRing(ev.x, ev.y, '#ffffff');
           hitStop = Math.max(hitStop, 160);
         } else {
+          this.renderer.shake(attacker.activeMoveKey === 'heavySlash' ? 7 : 3, attacker.activeMoveKey === 'heavySlash' ? 170 : 100);
           this.renderer.particles.spawnImpact(ev.x, ev.y, '#fff6a0', 10);
           this.renderer.particles.spawnSpark(ev.x, ev.y, '#ffffff', 10);
           this.renderer.particles.spawnRing(ev.x, ev.y, '#fff6a0');
@@ -233,6 +242,11 @@ export class Game {
     }
 
     this.renderer.particles.update(dt);
+    if (!round.isActive()) {
+      // Character.update (which normally ticks the hit flash) is skipped between rounds
+      p1.flashTimer = Math.max(0, p1.flashTimer - dt * 1000);
+      p2.flashTimer = Math.max(0, p2.flashTimer - dt * 1000);
+    }
     const prevPhase = round.phase;
     round.update(dt);
     if (round.phase !== prevPhase) {
@@ -274,12 +288,12 @@ export class Game {
     this.renderer.particles.spawnRing(sword.x, GROUND_Y - 20, '#d0d6dc');
   }
 
-  spawnBladeTrail(character) {
-    if (!character.hasSword || !character.isHitActive()) return;
-    const hb = character.getHitbox();
-    if (!hb) return;
-    const tipX = character.facing > 0 ? hb.x + hb.w : hb.x;
-    this.renderer.particles.spawnSpark(tipX, hb.y + hb.h / 2, 'rgba(255,255,255,0.8)', 2);
+  spawnLungeDust(character) {
+    const move = character.activeMove;
+    if (!move || !move.lunge || !character.grounded) return;
+    if (character.stateTime >= move.startup + move.active) return;
+    this.fight.dustTick = (this.fight.dustTick || 0) + 1;
+    if (this.fight.dustTick % 3 === 0) this.renderer.particles.spawnDust(character.x, character.y, character.facing);
   }
 
   onMatchEnd(winner) {
@@ -288,15 +302,15 @@ export class Game {
     Storage.saveRecords(this.records);
   }
 
-  render() {
-    this.renderer.beginFrame();
+  render(now = performance.now()) {
+    this.renderer.beginFrame(now);
     if (this.sceneName === 'fight' && this.fight) {
       this.renderer.drawArena(this.fight.arena, this.bgTime);
-      if (this.fight.groundSword) this.renderer.drawSwordOnGround(this.fight.groundSword.x);
+      if (this.fight.groundSword) this.renderer.drawSwordOnGround(this.fight.groundSword.x, now);
       this.renderer.drawShadow(this.fight.p1);
       this.renderer.drawShadow(this.fight.p2);
       const order = this.fight.p1.x <= this.fight.p2.x ? [this.fight.p1, this.fight.p2] : [this.fight.p2, this.fight.p1];
-      for (const fighter of order) this.renderer.drawFighter(fighter);
+      for (const fighter of order) this.renderer.drawFighter(fighter, now);
       this.renderer.particles.draw(this.renderer.ctx);
     } else {
       this.renderer.drawArena(this.bgArena, this.bgTime);
