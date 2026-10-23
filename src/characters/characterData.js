@@ -1,15 +1,19 @@
-// Fighters are generic/identical stick figures (see CharacterSprite.js), so
-// there is no character roster or selection anymore - createFighter() just
-// stamps out two instances of the same template with different display
-// names. Moves are shared (SWORD_MOVES below); CombatSystem/Character only
-// read these generic fields, so tuning a move or adding a new one never
-// touches the combat code - see README.md ("Como ajustar os golpes").
+// Fighters are identical stick-figure swordsmen (see CharacterSprite.js).
+// Move timings (ms) are matched to the keyframes in characterAnimations.js:
+// startup + active + recovery == total travel time of the animation, and the
+// blade reaches its contact pose inside the active window. If you retune a
+// move here, retune its animation durations too.
+//
+// lunge = forward speed (px/s) applied during startup+active (footwork).
+// critChance = chance a landed, unblocked hit is a critical (more damage and
+// knocks the defender's sword away).
 
 export const SWORD_MOVES = {
-  slash: { name: 'Golpe Rapido', damage: 6, startup: 70, active: 80, recovery: 160, range: 82, critChance: 0.08 },
-  heavySlash: { name: 'Golpe Forte', damage: 12, startup: 160, active: 100, recovery: 280, range: 92, critChance: 0.24 },
-  thrust: { name: 'Estocada', damage: 8, startup: 90, active: 70, recovery: 200, range: 100, critChance: 0.12, dash: true },
-  lowSlash: { name: 'Golpe Baixo', damage: 7, startup: 90, active: 80, recovery: 210, range: 86, critChance: 0.16 }
+  slash: { name: 'Corte Rapido', damage: 6, startup: 90, active: 70, recovery: 170, range: 88, critChance: 0.08, lunge: 130 },
+  heavySlash: { name: 'Golpe Descendente', damage: 13, startup: 170, active: 90, recovery: 300, range: 96, critChance: 0.26, lunge: 150 },
+  thrust: { name: 'Estocada', damage: 8, startup: 90, active: 70, recovery: 200, range: 118, critChance: 0.12, lunge: 420 },
+  lowSlash: { name: 'Rasteira', damage: 7, startup: 100, active: 80, recovery: 220, range: 92, critChance: 0.16, lunge: 110 },
+  airSlash: { name: 'Golpe Aereo', damage: 8, startup: 70, active: 110, recovery: 170, range: 90, critChance: 0.14 }
 };
 
 const STATS = { maxHealth: 100, walkSpeed: 210, jumpVelocity: -760, strength: 1.0, defense: 1.0, weight: 1.0 };
