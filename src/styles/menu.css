@@ -1,0 +1,161 @@
+@keyframes bgscroll {
+  from { background-position: 0 0; }
+  to { background-position: 0 64px; }
+}
+
+.menu-bg-grid, .cs-bg, .settings-bg, .credits-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 182, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 182, 255, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-color: #0b0b1e;
+  animation: bgscroll 6s linear infinite;
+  z-index: 0;
+}
+
+.main-menu .menu-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px;
+  text-align: center;
+}
+
+.logo {
+  font-family: var(--font-logo);
+  font-size: clamp(36px, 8vw, 72px);
+  color: var(--color-accent);
+  text-shadow: 4px 4px 0 var(--color-p2), -2px -2px 0 var(--color-p1);
+  margin: 0;
+  letter-spacing: 2px;
+}
+.logo span { color: #fff; }
+.logo small {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(10px, 2vw, 16px);
+  color: var(--color-text);
+  letter-spacing: 4px;
+  margin-top: 8px;
+  text-shadow: none;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(360px, 80vw);
+}
+
+.menu-buttons button, .settings-back, .credits-back, .cs-footer button {
+  font-size: clamp(11px, 2.4vw, 15px);
+  padding: 14px 18px;
+  background: linear-gradient(180deg, #2b2b45, #17172a);
+  color: var(--color-text);
+  border: 2px solid var(--color-accent);
+  border-radius: 4px;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.menu-buttons button:hover, .menu-buttons button:focus,
+.settings-back:hover, .credits-back:hover, .cs-footer button:hover {
+  background: var(--color-accent);
+  color: #111;
+  transform: translateY(-2px) scale(1.03);
+  outline: none;
+}
+
+.menu-footer {
+  max-width: 560px;
+  font-family: sans-serif;
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 0 16px;
+}
+
+/* Settings */
+.settings-menu .settings-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  max-width: 900px;
+  padding: 16px;
+  justify-content: center;
+}
+.settings-menu h2, .credits-screen h2, .char-select .cs-title {
+  position: relative;
+  z-index: 1;
+  color: var(--color-accent);
+  font-size: clamp(16px, 3vw, 26px);
+  margin: 16px 0;
+}
+.settings-section {
+  background: rgba(20, 20, 36, 0.8);
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 14px 18px;
+  min-width: 240px;
+}
+.settings-section h3 {
+  font-size: 11px;
+  color: var(--color-p1);
+  margin-top: 0;
+}
+.settings-section label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  margin: 10px 0;
+  font-family: sans-serif;
+}
+.settings-section select {
+  width: 100%;
+  padding: 6px;
+  font-family: var(--font-display);
+  font-size: 10px;
+}
+.keymap-grid {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.keymap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-family: sans-serif;
+}
+.keymap-row button {
+  min-width: 56px;
+  padding: 4px 8px;
+  background: #17172a;
+  border: 1px solid var(--color-p1);
+  color: #fff;
+  border-radius: 3px;
+  font-size: 10px;
+}
+.settings-back, .credits-back {
+  position: relative;
+  z-index: 1;
+  margin: 12px 0 24px;
+}
+
+/* Credits */
+.credits-body {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  font-family: sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 0 20px;
+  text-align: center;
+}
