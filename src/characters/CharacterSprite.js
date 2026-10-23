@@ -61,6 +61,10 @@ function strokeChain(ctx, upperAngle, upperLen, lowerAngle, lowerLen, tipDraw) {
 /** Draws a sword lying on the ground (dropped after a disarm). */
 export function drawGroundSword(ctx, x, groundY) {
   ctx.save();
+  ctx.fillStyle = 'rgba(255, 240, 160, 0.35)';
+  ctx.beginPath();
+  ctx.ellipse(x, groundY + 2, 48, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.translate(x, groundY - 6);
   ctx.rotate(-18 * D2R);
   ctx.strokeStyle = '#2a2a2a';
