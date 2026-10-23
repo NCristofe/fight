@@ -1,0 +1,284 @@
+import { GROUND_Y, STAGE_LEFT, STAGE_RIGHT, GRAVITY, MAX_ENERGY } from '../utils/constants.js';
+import { getAnimation } from './characterAnimations.js';
+import { interpolateFrame } from './CharacterSprite.js';
+
+let nextAttackId = 1;
+
+const BUSY_STATES = new Set(['punch', 'kick', 'special', 'super', 'hitstun', 'stunned']);
+
+export class Character {
+  constructor(data, { playerIndex, x, facing, isAI = false, difficulty = 'normal' }) {
+    this.data = data;
+    this.playerIndex = playerIndex;
+    this.isAI = isAI;
+    this.difficulty = difficulty;
+
+    this.x = x;
+    this.y = GROUND_Y;
+    this.vx = 0;
+    this.vy = 0;
+    this.facing = facing;
+    this.grounded = true;
+
+    this.maxHealth = data.stats.maxHealth;
+    this.health = this.maxHealth;
+    this.maxEnergy = MAX_ENERGY;
+    this.energy = 0;
+
+    this.state = 'idle';
+    this.stateTime = 0;
+    this.animElapsed = 0;
+
+    this.activeMoveKey = null;
+    this.activeMove = null;
+    this.hitsLandedThisAttack = 0;
+    this.hitInvulnerable = false;
+    this.flashTimer = 0;
+    this.comboCount = 0;
+    this.lastHitLandedAt = -Infinity;
+    this.roundsWon = 0;
+    this.koAnimPlayed = false;
+
+    this.events = [];
+    this.facingLocked = false;
+  }
+
+  canAct() {
+    return this.grounded && !BUSY_STATES.has(this.state);
+  }
+
+  isAttacking() {
+    return this.state === 'punch' || this.state === 'kick' || this.state === 'special' || this.state === 'super';
+  }
+
+  setState(state) {
+    if (this.state === state) return;
+    this.state = state;
+    this.stateTime = 0;
+    this.animElapsed = 0;
+    if (!this.isAttacking()) {
+      this.activeMoveKey = null;
+      this.activeMove = null;
+      this.hitsLandedThisAttack = 0;
+    }
+  }
+
+  resolveMoveKey(wantsSuper, wantsSpecial2) {
+    const moves = this.data.moves;
+    if (wantsSuper && this.energy >= moves.super.energyCost) return 'super';
+    if (wantsSpecial2 && moves.special2 && this.energy >= moves.special2.energyCost) return 'special2';
+    if (moves.special1 && this.energy >= moves.special1.energyCost) return 'special1';
+    return null;
+  }
+
+  startAttack(key) {
+    const moves = this.data.moves;
+    const move = key === 'punch' || key === 'kick' ? moves[key] : moves[key];
+    if (!move) return;
+    if (key === 'special1' || key === 'special2') {
+      this.energy = Math.max(0, this.energy - move.energyCost);
+      this.setState('special');
+    } else if (key === 'super') {
+      this.energy = Math.max(0, this.energy - move.energyCost);
+      this.setState('super');
+    } else {
+      this.setState(key);
+    }
+    this.activeMoveKey = key;
+    this.activeMove = move;
+    this.hitsLandedThisAttack = 0;
+    this.attackId = nextAttackId++;
+    this.vx = 0;
+
+    if (move.projectile) {
+      this.events.push({ type: 'spawnProjectile', move, x: this.x + this.facing * 50, y: GROUND_Y - 80, facing: this.facing, owner: this.playerIndex });
+    }
+    this.events.push({ type: 'sfx', sound: key === 'punch' ? 'punch' : key === 'kick' ? 'kick' : key === 'super' ? 'super' : 'special' });
+  }
+
+  isHitActive() {
+    if (!this.isAttacking() || !this.activeMove) return false;
+    return this.stateTime >= this.activeMove.startup && this.stateTime < this.activeMove.startup + this.activeMove.active;
+  }
+
+  currentPulseIndex() {
+    if (!this.activeMove) return -1;
+    const hits = this.activeMove.hits || 1;
+    const progress = this.stateTime - this.activeMove.startup;
+    const slice = this.activeMove.active / hits;
+    return Math.min(hits - 1, Math.floor(progress / slice));
+  }
+
+  getHurtbox() {
+    const crouch = this.state === 'crouch';
+    const h = crouch ? 95 : 150;
+    const w = 56;
+    return { x: this.x - w / 2, y: GROUND_Y - h, w, h };
+  }
+
+  getHitbox() {
+    if (!this.isHitActive() || !this.activeMove) return null;
+    const range = this.activeMove.range;
+    const w = this.activeMove.projectile ? 0 : Math.min(range, 120);
+    const originX = this.x + (this.facing > 0 ? 20 : -20 - w);
+    return { x: originX, y: GROUND_Y - 120, w, h: 70 };
+  }
+
+  receiveHit(move, attackerFacing, { blocked = false } = {}) {
+    const defenseFactor = this.data.stats.defense;
+    let damage = move.damage * defenseFactor;
+    if (blocked) {
+      damage *= 0.12;
+      this.energy = Math.min(this.maxEnergy, this.energy + 4);
+      this.events.push({ type: 'sfx', sound: 'block' });
+      this.flashTimer = 80;
+      this.vx = -attackerFacing * 70;
+    } else {
+      this.energy = Math.min(this.maxEnergy, this.energy + (move.energyGain || 10));
+      this.setState('hitstun');
+      this.vx = -attackerFacing * 160;
+      this.flashTimer = 120;
+      this.events.push({ type: 'sfx', sound: 'hit' });
+      const now = performance.now();
+      if (now - this.lastHitLandedAt < 1400) this.comboCount += 1;
+      else this.comboCount = 1;
+      this.lastHitLandedAt = now;
+    }
+    this.health = Math.max(0, this.health - damage);
+    if (this.health <= 0) {
+      this.setState('lose');
+    }
+    return damage;
+  }
+
+  update(dt, input, opponent) {
+    this.events.length = 0;
+    this.stateTime += dt * 1000;
+    this.animElapsed += dt * 1000;
+    if (this.flashTimer > 0) this.flashTimer -= dt * 1000;
+
+    if (this.health <= 0) {
+      this.vx *= 0.9;
+      this.x += this.vx * dt;
+      this.clampToStage();
+      return;
+    }
+
+    // auto-face opponent unless mid-attack/hitstun
+    if (!BUSY_STATES.has(this.state) && opponent) {
+      this.facing = opponent.x >= this.x ? 1 : -1;
+    }
+
+    if (this.state === 'hitstun') {
+      this.vx *= 0.85;
+      if (this.stateTime > 320) this.setState('idle');
+    } else if (this.state === 'stunned') {
+      if (this.stateTime > 900) this.setState('idle');
+    } else if (this.isAttacking()) {
+      const move = this.activeMove;
+      if (move) {
+        const total = move.startup + move.active + move.recovery;
+        if (move.dash && this.stateTime < move.startup + move.active) {
+          this.vx = this.facing * 340;
+        } else {
+          this.vx *= 0.8;
+        }
+        if (this.stateTime >= total) this.setState('idle');
+      } else {
+        this.setState('idle');
+      }
+    } else {
+      this.handleFreeInput(input);
+    }
+
+    // physics
+    if (!this.grounded) {
+      this.vy += GRAVITY * dt;
+    }
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    if (this.y >= GROUND_Y) {
+      this.y = GROUND_Y;
+      if (!this.grounded) {
+        this.grounded = true;
+        this.vy = 0;
+        if (this.state === 'jump') this.setState('idle');
+      }
+    }
+    this.clampToStage();
+  }
+
+  handleFreeInput(input) {
+    if (!this.grounded) return;
+
+    if (input.upPressed && this.canAct()) {
+      this.vy = this.data.stats.jumpVelocity;
+      this.grounded = false;
+      this.setState('jump');
+      return;
+    }
+
+    if (input.punchPressed && this.canAct()) {
+      this.startAttack('punch');
+      return;
+    }
+    if (input.kickPressed && this.canAct()) {
+      this.startAttack('kick');
+      return;
+    }
+    if (input.specialPressed && this.canAct()) {
+      const key = this.resolveMoveKey(this.energy >= this.maxEnergy, input.down);
+      if (key) {
+        this.startAttack(key);
+        return;
+      }
+    }
+
+    if (input.block) {
+      this.setState('block');
+      this.vx = 0;
+      return;
+    }
+
+    if (input.down) {
+      this.setState('crouch');
+      this.vx = 0;
+      return;
+    }
+
+    const speed = this.data.stats.walkSpeed;
+    if (input.left && !input.right) {
+      this.vx = -speed;
+      this.setState(this.facing > 0 ? 'walk_back' : 'walk_forward');
+    } else if (input.right && !input.left) {
+      this.vx = speed;
+      this.setState(this.facing > 0 ? 'walk_forward' : 'walk_back');
+    } else {
+      this.vx = 0;
+      this.setState('idle');
+    }
+  }
+
+  clampToStage() {
+    this.x = Math.max(STAGE_LEFT, Math.min(STAGE_RIGHT, this.x));
+  }
+
+  getRenderPose() {
+    const anim = getAnimation(this.state);
+    const { pose } = interpolateFrame(anim, this.animElapsed);
+    return pose;
+  }
+
+  reset(x, facing) {
+    this.x = x;
+    this.y = GROUND_Y;
+    this.vx = 0;
+    this.vy = 0;
+    this.facing = facing;
+    this.grounded = true;
+    this.health = this.maxHealth;
+    this.energy = 0;
+    this.comboCount = 0;
+    this.setState('idle');
+  }
+}
