@@ -56,7 +56,7 @@ export class MoveListScreen {
       <h3>GOLPE CRITICO</h3>
       <p>Um golpe critico causa mais dano e <strong>derruba a espada</strong> de quem foi atingido.</p>
       <p>Sem espada voce nao ataca e defende pior. Caminhe ate a espada caida para pega-la de volta.</p>
-      <p>${callbacks.pvp ? 'Vale para os dois jogadores.' : 'Isso vale para a CPU tambem.'}</p>
+      <p>${callbacks.online ? 'Vale para os dois jogadores. As setas + J/K/L tambem controlam seu lutador.' : callbacks.pvp ? 'Vale para os dois jogadores.' : 'Isso vale para a CPU tambem.'}</p>
     `;
     body.appendChild(rules);
 
@@ -65,19 +65,27 @@ export class MoveListScreen {
       callbacks.onBack();
     });
     const startBtn = this.el.querySelector('[data-action="start"]');
-    startBtn.addEventListener('click', () => {
+    this.startBtn = startBtn;
+    this.started = false;
+    const start = () => {
+      if (this.started) return;
+      this.started = true;
       audio.sfx('confirm');
+      if (callbacks.online) this.setWaiting();
       callbacks.onStart();
-    });
+    };
+    startBtn.addEventListener('click', start);
     startBtn.focus();
 
     this.onKey = (e) => {
-      if (e.code === 'Enter' || e.code === 'Space') {
-        audio.sfx('confirm');
-        callbacks.onStart();
-      }
+      if (e.code === 'Enter' || e.code === 'Space') start();
     };
     window.addEventListener('keydown', this.onKey);
+  }
+
+  setWaiting() {
+    this.startBtn.disabled = true;
+    this.startBtn.textContent = 'AGUARDANDO OPONENTE...';
   }
 
   destroy() {
