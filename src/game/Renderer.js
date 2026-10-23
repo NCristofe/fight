@@ -62,21 +62,6 @@ class ParticleSystem {
     this.particles.push({ type: 'ring', x, y, radius: 6, life: 220, maxLife: 220, color });
   }
 
-  /** A tiny fading streak, used to trace the blade's swing while an attack is active. */
-  spawnSwish(x, y, color = '#ffffff') {
-    this.particles.push({
-      type: 'spark',
-      x,
-      y,
-      vx: (Math.random() - 0.5) * 30,
-      vy: (Math.random() - 0.5) * 30,
-      life: 90,
-      maxLife: 90,
-      length: 10,
-      color
-    });
-  }
-
   update(dt) {
     for (const p of this.particles) {
       if (p.type === 'ring') {
@@ -161,7 +146,11 @@ export class Renderer {
   drawFighter(fighter) {
     const pose = fighter.getRenderPose();
     const flash = fighter.flashTimer > 0;
-    drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, { flash });
+    drawCharacter(this.ctx, fighter.x, fighter.y, fighter.facing, pose, { flash, hasSword: fighter.hasSword });
+  }
+
+  drawSwordOnGround(x) {
+    drawGroundSword(this.ctx, x, GROUND_Y);
   }
 
   drawShadow(fighter) {
