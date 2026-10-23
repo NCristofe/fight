@@ -1,4 +1,4 @@
-# BR FIGHTER — Duelo de Poder
+# DUELO DE LÂMINAS
 
 Jogo de luta 2D para navegador com bonecos-palito e espadas. HTML5 Canvas +
 JavaScript moderno, sem frameworks de UI — apenas Vite como servidor de
@@ -28,11 +28,12 @@ pretos). Voce e o "Jogador" a esquerda, o adversario e a "CPU".
 
 | Golpe | Comando |
 |---|---|
-| Golpe Rapido | soco |
-| Golpe Forte | agachar + soco |
-| Estocada (avanca) | chute |
-| Golpe Baixo | agachar + chute |
-| Defesa | defesa |
+| Corte Rapido (avanca um passo) | corte |
+| Golpe Descendente (lento, muito critico) | agachar + corte |
+| Estocada (longo alcance, investida) | estocada |
+| Rasteira | agachar + estocada |
+| Golpe Aereo (corte em mergulho) | corte durante o pulo |
+| Defesa (lamina na vertical) | defesa |
 
 **Golpe critico:** cada golpe tem uma chance de critico (o Golpe Forte e o mais
 arriscado). Um critico causa 40% a mais de dano e **derruba a espada** de quem
@@ -46,13 +47,13 @@ A chance de critico de cada golpe fica em `SWORD_MOVES`
 
 ## Controles
 
-**Teclado:** A/D movem, W pula, S agacha, F soco, G chute, H defesa.
+**Teclado:** A/D movem, W pula, S agacha, F corte, G estocada, H defesa.
 Remapeavel em **Configuracoes**. `Esc` pausa a luta (tambem pausa ao perder o
 foco da janela).
 
 **Toque:** os controles virtuais aparecem automaticamente em telas sensiveis
 ao toque (ou force em Configuracoes → Controles). Esquerda move/pula/agacha,
-direita ataca/defende. Segure AGACHAR e toque SOCO/CHUTE para os golpes
+direita ataca/defende. Segure AGACHAR e toque CORTE/ESTOC. para os golpes
 agachados.
 
 Uma tela de golpes aparece antes de cada luta.
@@ -75,10 +76,17 @@ src/
 
 - **Numeros dos golpes** (dano, tempos, alcance, chance de critico): `SWORD_MOVES`
   em `characterData.js`. Os dois lutadores compartilham o mesmo objeto.
-- **Animacoes:** `characterAnimations.js` define poses-chave (angulos de
-  ombro/cotovelo/quadril/joelho) por estado — `idle`, `walk_forward`, `jump`,
-  `crouch`, `slash`, `heavySlash`, `thrust`, `lowSlash`, `block`, `hitstun`,
-  `win`, `lose`. O renderer interpola suavemente entre as poses.
+- **Animacoes:** `characterAnimations.js` define poses-chave por estado
+  (idle, andar, pular/cair, agachar, os 5 golpes, defesa, dano, vitoria, queda).
+  A convencao de angulos esta no topo do arquivo. A duracao de cada quadro e o
+  tempo ate o proximo, e o total de cada golpe deve bater com
+  startup+active+recovery em `SWORD_MOVES` para a lamina chegar ao contato dentro
+  da janela de acerto. Os pes sao aterrados automaticamente, entao agachar so
+  precisa dos angulos das pernas.
+- **Efeitos:** rastro da lamina (segue a ponta da espada), tremor de tela,
+  faiscas, aneis de impacto, poeira nas investidas e hit-stop, tudo em
+  `Renderer.js`/`Game.js`.
+- **Cenarios:** `arenas.js` (dojo, patio do castelo, bambuzal), desenhados por codigo.
 - **Desenho:** `CharacterSprite.js` desenha o boneco-palito e a espada
   (presa a mao da frente, inclinada para cima na guarda).
 
