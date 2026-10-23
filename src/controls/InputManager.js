@@ -37,10 +37,6 @@ export class InputManager {
     this.touch = {};
   }
 
-  setTouchEnergyFull(playerIndex, isFull) {
-    if (this.touch[playerIndex]) this.touch[playerIndex].setEnergyFull(isFull);
-  }
-
   pollPlayer(playerIndex) {
     const km = playerIndex === 0 ? this.settings.keymap.p1 : this.settings.keymap.p2;
     const kb = this.keyboard;
@@ -52,11 +48,9 @@ export class InputManager {
       punch: kb.isHeld(km.punch),
       kick: kb.isHeld(km.kick),
       block: kb.isHeld(km.block),
-      special: kb.isHeld(km.special),
       upPressed: kb.wasPressed(km.up),
       punchPressed: kb.wasPressed(km.punch),
-      kickPressed: kb.wasPressed(km.kick),
-      specialPressed: kb.wasPressed(km.special)
+      kickPressed: kb.wasPressed(km.kick)
     };
     const touchCtrl = this.touch[playerIndex];
     if (!touchCtrl) return kbState;
