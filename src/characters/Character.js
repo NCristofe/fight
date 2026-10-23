@@ -261,9 +261,22 @@ export class Character {
     this.vy = 0;
     this.facing = facing;
     this.grounded = true;
+    this.hasSword = true;
     this.health = this.maxHealth;
     this.energy = 0;
     this.comboCount = 0;
     this.setState('idle');
+  }
+
+  disarm() {
+    if (!this.hasSword) return;
+    this.hasSword = false;
+    this.events.push({ type: 'disarmed', x: this.x, y: GROUND_Y - 90 });
+    this.events.push({ type: 'sfx', sound: 'disarm' });
+  }
+
+  pickUpSword() {
+    this.hasSword = true;
+    this.events.push({ type: 'sfx', sound: 'pickup' });
   }
 }
