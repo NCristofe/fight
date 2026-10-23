@@ -1,5 +1,5 @@
 function wireButtonNav(container, audio) {
-  const buttons = [...container.querySelectorAll('button')];
+  const buttons = [...container.querySelectorAll('button:not([disabled])')];
   buttons.forEach((btn) => {
     btn.addEventListener('mouseenter', () => audio.sfx('menu'));
     btn.addEventListener('focus', () => audio.sfx('menu'));
@@ -26,37 +26,26 @@ export class MainMenu {
       <div class="menu-content">
         <h1 class="logo">BR <span>FIGHTER</span><small>DUELO DE PODER</small></h1>
         <nav class="menu-buttons">
-          <button data-action="play">JOGAR</button>
+          <button data-action="play">LUTAR CONTRA A CPU</button>
           <button data-action="training">TREINAMENTO</button>
-          <button data-action="characters">PERSONAGENS</button>
+          <button data-action="pvp" class="is-coming-soon" disabled aria-disabled="true">PVP <em>EM BREVE</em></button>
           <button data-action="settings">CONFIGURACOES</button>
           <button data-action="credits">CREDITOS</button>
         </nav>
-        <p class="menu-footer">Satira ficticia e nao-oficial. Personagens e eventos sao fictícios para fins de entretenimento.</p>
       </div>
     `;
     root.appendChild(this.el);
 
-    this.el.querySelector('[data-action="play"]').addEventListener('click', () => {
-      audio.sfx('confirm');
-      callbacks.onPlay();
-    });
-    this.el.querySelector('[data-action="training"]').addEventListener('click', () => {
-      audio.sfx('confirm');
-      callbacks.onTraining();
-    });
-    this.el.querySelector('[data-action="characters"]').addEventListener('click', () => {
-      audio.sfx('confirm');
-      callbacks.onCharacters();
-    });
-    this.el.querySelector('[data-action="settings"]').addEventListener('click', () => {
-      audio.sfx('confirm');
-      callbacks.onSettings();
-    });
-    this.el.querySelector('[data-action="credits"]').addEventListener('click', () => {
-      audio.sfx('confirm');
-      callbacks.onCredits();
-    });
+    const wire = (action, handler) => {
+      this.el.querySelector(`[data-action="${action}"]`).addEventListener('click', () => {
+        audio.sfx('confirm');
+        handler();
+      });
+    };
+    wire('play', callbacks.onPlay);
+    wire('training', callbacks.onTraining);
+    wire('settings', callbacks.onSettings);
+    wire('credits', callbacks.onCredits);
 
     wireButtonNav(this.el.querySelector('.menu-buttons'), audio);
   }
